@@ -1,0 +1,16 @@
+elasticsearch:
+  host_url:
+
+management.health.elasticsearch.enabled: false
+
+server:
+  port: 9050
+  servlet.contextPath: "/spectra-ws
+
+springdoc:
+  api-docs:
+    enabled: true
+    path: '/api-docs'
+  swagger-ui:
+    tagsSorter: alpha
+    disable-swagger-default-url: true
