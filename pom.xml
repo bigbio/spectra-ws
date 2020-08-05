@@ -47,7 +47,7 @@
         <dependency>
             <groupId>io.github.bigbio.pgatk</groupId>
             <artifactId>pgatk-io</artifactId>
-            <version>1.0.0-SNAPSHOT</version>
+            <version>1.0.1-SNAPSHOT</version>
         </dependency>
 
         <dependency>
@@ -175,6 +175,10 @@
 
 
     <repositories>
+        <repository>
+            <id>Sonatype-snapshots</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        </repository>
         <repository> <!-- EBI repo -->
             <id>nexus-ebi-repo</id>
             <name>The EBI internal repository</name>
