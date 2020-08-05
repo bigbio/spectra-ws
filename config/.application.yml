@@ -1,11 +1,15 @@
-elasticsearch:
-  host_url:
+spring.application.name: $app_name
+
+logging:
+  file.path: $logspath/logs_${HOSTNAME}/
+
+elasticsearch.host_url: $elasticsearch_hosts
 
 management.health.elasticsearch.enabled: false
 
 server:
-  port: 9050
-  servlet.contextPath: "/spectra-ws
+  port: $port
+  servlet.contextPath: $contextPath
 
 springdoc:
   api-docs:
