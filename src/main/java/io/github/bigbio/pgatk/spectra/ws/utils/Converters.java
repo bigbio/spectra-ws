@@ -21,7 +21,7 @@ public class Converters {
                 .peptideSequence(es.getPepSequence())
                 .precursorMz(es.getPrecursorMz())
                 .precursorCharge((int) Math.round(es.getPrecursorCharge())) //TODO : is this OK?? double to int?
-//                .modifications(es.getModifications())
+                .modifications(es.getModifications())
                 .masses(es.getMasses().toArray(new Double[0]))
                 .intensities(es.getIntensities().toArray(new Double[0]))
                 .retentionTime(es.getRetentionTime())

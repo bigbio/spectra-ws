@@ -107,16 +107,6 @@ public class SpectrumService {
         SearchHits<ElasticSpectrum> searches = elasticsearchRestTemplate.search(query, ElasticSpectrum.class, IndexCoordinates.of(SPECTRA_INDEX_NAME));
         List<ElasticSpectrum> elasticSpectrums = searches.stream().map(SearchHit::getContent).collect(Collectors.toList());
         List<ArchiveSpectrum> archiveSpectrums = elasticSpectrums.stream().map(Converters::elasticToArchiveSpectrum).collect(Collectors.toList());
-        ObjectMapper objectMapper = new ObjectMapper();
-        for(ArchiveSpectrum es : archiveSpectrums) {
-            try {
-                System.out.println("****");
-                System.out.println(es);
-                objectMapper.writeValueAsString(es);
-            } catch (JsonProcessingException e) {
-                e.printStackTrace();
-            }
-        }
         return archiveSpectrums;
     }
 }
