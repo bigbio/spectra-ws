@@ -1,14 +1,14 @@
 package io.github.bigbio.pgatk.spectra.ws.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bigbio.pgatk.io.pride.ArchiveSpectrum;
+import io.github.bigbio.pgatk.io.utils.Tuple;
 import io.github.bigbio.pgatk.spectra.ws.model.ElasticSpectrum;
 import io.github.bigbio.pgatk.spectra.ws.repository.ElasticSearchSpectrumRepository;
 import io.github.bigbio.pgatk.spectra.ws.utils.Converters;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
@@ -22,7 +22,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import static io.github.bigbio.pgatk.spectra.ws.utils.Constants.SPECTRA_INDEX_NAME;
+import io.github.bigbio.pgatk.spectra.ws.utils.Constants;
 
 @Slf4j
 @Service
@@ -94,17 +94,26 @@ public class SpectrumService {
         return elasticSearchSpectrumRepository.findById(usi);
     }
 
-    public List<ArchiveSpectrum> getByIds(List<String> usis) {
-        CriteriaQuery query = new CriteriaQuery(new Criteria("_id").in(usis));
-        SearchHits<ElasticSpectrum> searches = elasticsearchRestTemplate.search(query, ElasticSpectrum.class, IndexCoordinates.of(SPECTRA_INDEX_NAME));
+    public List<ArchiveSpectrum> getByIds(List<String> usis, Tuple<Integer, Integer> pageParams) {
+
+//        List<ElasticSpectrum> elasticSpectrums = elasticSearchSpectrumRepository.findByIdIn(usis);
+        CriteriaQuery query = new CriteriaQuery(new Criteria("_id").in(usis))
+                .addSort(Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD))
+                .setPageable(PageRequest.of(pageParams.getKey(), pageParams.getValue()));
+
+        SearchHits<ElasticSpectrum> searches = elasticsearchRestTemplate.search(query, ElasticSpectrum.class, IndexCoordinates.of(Constants.SPECTRA_INDEX_NAME));
         List<ElasticSpectrum> elasticSpectrums = searches.stream().map(SearchHit::getContent).collect(Collectors.toList());
         List<ArchiveSpectrum> archiveSpectrums = elasticSpectrums.stream().map(Converters::elasticToArchiveSpectrum).collect(Collectors.toList());
         return archiveSpectrums;
     }
 
-    public List<ArchiveSpectrum> findByPepSequence(String pepSequence) {
-        CriteriaQuery query = new CriteriaQuery(new Criteria("pepSequence").contains(pepSequence));
-        SearchHits<ElasticSpectrum> searches = elasticsearchRestTemplate.search(query, ElasticSpectrum.class, IndexCoordinates.of(SPECTRA_INDEX_NAME));
+    public List<ArchiveSpectrum> findByPepSequence(String pepSequence, Tuple<Integer, Integer> pageParams) {
+
+        CriteriaQuery query = new CriteriaQuery(new Criteria("pepSequence").expression(pepSequence))
+                .addSort(Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD))
+                .setPageable(PageRequest.of(pageParams.getKey(), pageParams.getValue()));
+
+        SearchHits<ElasticSpectrum> searches = elasticsearchRestTemplate.search(query, ElasticSpectrum.class, IndexCoordinates.of(Constants.SPECTRA_INDEX_NAME));
         List<ElasticSpectrum> elasticSpectrums = searches.stream().map(SearchHit::getContent).collect(Collectors.toList());
         List<ArchiveSpectrum> archiveSpectrums = elasticSpectrums.stream().map(Converters::elasticToArchiveSpectrum).collect(Collectors.toList());
         return archiveSpectrums;
