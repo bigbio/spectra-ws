@@ -1,7 +1,6 @@
 package io.github.bigbio.pgatk.spectra.ws.utils;
 
 
-import io.github.bigbio.pgatk.io.utils.Triple;
 import io.github.bigbio.pgatk.io.utils.Tuple;
 
 public class WsUtils {

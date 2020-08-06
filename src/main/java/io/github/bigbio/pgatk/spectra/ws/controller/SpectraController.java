@@ -1,19 +1,27 @@
 package io.github.bigbio.pgatk.spectra.ws.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bigbio.pgatk.io.pride.ArchiveSpectrum;
 import io.github.bigbio.pgatk.io.utils.Tuple;
 import io.github.bigbio.pgatk.spectra.ws.model.ElasticSpectrum;
+import io.github.bigbio.pgatk.spectra.ws.repository.SpectrumRepositoryStream;
 import io.github.bigbio.pgatk.spectra.ws.service.SpectrumService;
+import io.github.bigbio.pgatk.spectra.ws.utils.Converters;
 import io.github.bigbio.pgatk.spectra.ws.utils.WsUtils;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import javax.validation.Valid;
+import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @RestController
 @Validated
@@ -23,10 +31,14 @@ import java.util.Optional;
 public class SpectraController {
 
     private final SpectrumService spectrumService;
+    private final ObjectMapper objectMapper;
+    private final SpectrumRepositoryStream spectrumRepositoryStream;
 
     @Autowired
-    public SpectraController(SpectrumService spectrumService) {
+    public SpectraController(SpectrumService spectrumService, ObjectMapper objectMapper, SpectrumRepositoryStream spectrumRepositoryStream) {
         this.spectrumService = spectrumService;
+        this.objectMapper = objectMapper;
+        this.spectrumRepositoryStream = spectrumRepositoryStream;
     }
 
     @GetMapping("/findByUsi")
@@ -49,6 +61,21 @@ public class SpectraController {
 
         Tuple<Integer, Integer> pageParams = WsUtils.validatePageLimit(page, pageSize);
         return spectrumService.findByPepSequence(pepSequence, pageParams);
+    }
+
+    @GetMapping("/stream/findByPepSequence")
+    public ResponseEntity<StreamingResponseBody> findByPepSequenceStream(@Valid @RequestParam String pepSequence) {
+        Stream<ElasticSpectrum> stream = spectrumRepositoryStream.findByPepSequenceLike(pepSequence);
+        StreamingResponseBody streamOut = out -> stream.forEach(s -> {
+            ArchiveSpectrum archiveSpectrum = Converters.elasticToArchiveSpectrum(s);
+            try {
+                objectMapper.writeValueAsString(archiveSpectrum);
+                out.write(s.toString().getBytes());
+            } catch (IOException e) {
+                throw new IllegalStateException(e.getMessage(), e);
+            }
+        });
+        return new ResponseEntity(streamOut, HttpStatus.OK);
     }
 }
 
