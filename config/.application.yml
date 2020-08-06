@@ -11,6 +11,8 @@ server:
   port: $port
   servlet.contextPath: $contextPath
 
+spring.mvc.async.request-timeout: -1
+
 springdoc:
   api-docs:
     enabled: true
