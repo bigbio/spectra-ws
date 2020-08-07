@@ -10,4 +10,6 @@ import java.util.List;
 @Repository
 public interface SpectrumRepository extends ElasticsearchRepository<ElasticSpectrum, String> {
     List<ElasticSpectrum> findByPepSequenceLike(String pep, Pageable pageable);
+    List<ElasticSpectrum> findByUsiIn(List<String> usi, Pageable pageable);
+    ElasticSpectrum findByUsi(String usi);
 }

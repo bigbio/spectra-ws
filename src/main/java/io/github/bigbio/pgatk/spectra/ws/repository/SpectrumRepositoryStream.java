@@ -9,4 +9,5 @@ import java.util.stream.Stream;
 @Repository
 public interface SpectrumRepositoryStream extends ElasticsearchRepository<ElasticSpectrum, String> {
     Stream<ElasticSpectrum> findByPepSequenceLike(String pep);
+    Stream<ElasticSpectrum> findByPepSequenceContaining(String pep);
 }

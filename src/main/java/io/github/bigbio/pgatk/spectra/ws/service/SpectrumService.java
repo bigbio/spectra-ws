@@ -13,12 +13,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHit;
 import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.SearchScrollHits;
 import org.springframework.data.elasticsearch.core.mapping.IndexCoordinates;
 import org.springframework.data.elasticsearch.core.query.Criteria;
 import org.springframework.data.elasticsearch.core.query.CriteriaQuery;
+import org.springframework.data.elasticsearch.core.query.NativeSearchQueryBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -29,7 +32,6 @@ public class SpectrumService {
 
     private final SpectrumRepository spectrumRepository;
     private final ElasticsearchRestTemplate elasticsearchRestTemplate;
-
 
     @Autowired
     public SpectrumService(SpectrumRepository spectrumRepository, ElasticsearchRestTemplate elasticsearchRestTemplate) {
@@ -48,13 +50,13 @@ public class SpectrumService {
     }
 
     public List<ArchiveSpectrum> getByIds(List<String> usis, Tuple<Integer, Integer> pageParams) {
-
-//        List<ElasticSpectrum> elasticSpectrums = elasticSearchSpectrumRepository.findByIdIn(usis);
+        PageRequest pageRequest = PageRequest.of(pageParams.getKey(), pageParams.getValue());
+//        List<ElasticSpectrum> elasticSpectrums22 = spectrumRepository.findByUsiIn(usis, pageRequest); //not working
         CriteriaQuery query = new CriteriaQuery(new Criteria("_id").in(usis))
                 .addSort(Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD))
-                .setPageable(PageRequest.of(pageParams.getKey(), pageParams.getValue()));
+                .setPageable(pageRequest);
 
-        SearchHits<ElasticSpectrum> searches = elasticsearchRestTemplate.search(query, ElasticSpectrum.class, IndexCoordinates.of(Constants.SPECTRA_INDEX_NAME));
+        SearchHits<ElasticSpectrum> searches = elasticsearchRestTemplate.search(query, ElasticSpectrum.class, Constants.INDEX_COORDINATES);
         List<ElasticSpectrum> elasticSpectrums = searches.stream().map(SearchHit::getContent).collect(Collectors.toList());
         List<ArchiveSpectrum> archiveSpectrums = elasticSpectrums.stream().map(Converters::elasticToArchiveSpectrum).collect(Collectors.toList());
         return archiveSpectrums;
@@ -63,14 +65,15 @@ public class SpectrumService {
     public List<ArchiveSpectrum> findByPepSequence(String pepSequence, Tuple<Integer, Integer> pageParams) {
 
         PageRequest pageRequest = PageRequest.of(pageParams.getKey(), pageParams.getValue(), Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
-//        List<ElasticSpectrum> elasticSpectrums = spectrumRepository.findByPepSequenceLike(pepSequence, pageRequest); //doesn't work for cases like "ABC*XYZ"
+//        List<ElasticSpectrum> elasticSpectrums = spectrumRepository.findByPepSequenceContaining(pepSequence, pageRequest); //doesn't work for cases like "ABC*XYZ"
 
         CriteriaQuery query = new CriteriaQuery(new Criteria("pepSequence").expression(pepSequence)).setPageable(pageRequest);
 
-        SearchHits<ElasticSpectrum> searches = elasticsearchRestTemplate.search(query, ElasticSpectrum.class, IndexCoordinates.of(Constants.SPECTRA_INDEX_NAME));
+        SearchHits<ElasticSpectrum> searches = elasticsearchRestTemplate.search(query, ElasticSpectrum.class, Constants.INDEX_COORDINATES);
         List<ElasticSpectrum> elasticSpectrums = searches.stream().map(SearchHit::getContent).collect(Collectors.toList());
         List<ArchiveSpectrum> archiveSpectrums = elasticSpectrums.stream().map(Converters::elasticToArchiveSpectrum).collect(Collectors.toList());
         return archiveSpectrums;
     }
+
 }
 
