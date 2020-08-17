@@ -76,54 +76,14 @@ public class SpectraController {
         return spectrumService.findByPepSequence(pepSequence, pageParams);
     }
 
-//    @GetMapping(path = "/stream/findByPepSequence")
-//    public ResponseEntity<ResponseBodyEmitter> findByPepSequenceStream(@Valid @RequestParam String pepSequence) {
-//        ResponseBodyEmitter emitter = new ResponseBodyEmitter();
-//        emitterFunc(pepSequence, emitter, false);
-//        return new ResponseEntity(emitter, HttpStatus.OK);
-//    }
-//
-//    private void emitterFunc(String pepSequence, ResponseBodyEmitter emitter, boolean isSse) {
-//        ExecutorService executor = Executors.newSingleThreadExecutor();
-//        executor.execute(() -> {
-//            final String NEWLINE = "\n";
-//            PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
-//            CriteriaQuery query = new CriteriaQuery(new Criteria("pepSequence").expression(pepSequence)).setPageable(pageRequest);
-//            int scrollTimeInMillis = 60000;
-//            List<String> scrollIds = new ArrayList<>();
-//            SearchScrollHits<ElasticSpectrum> scroll = elasticsearchRestTemplate.searchScrollStart(scrollTimeInMillis, query, ElasticSpectrum.class, Constants.INDEX_COORDINATES);
-//            String scrollId = scroll.getScrollId();
-//            scrollIds.add(scrollId);
-//            AtomicLong id = new AtomicLong();
-//            while (scroll.hasSearchHits()) {
-//                scroll.getSearchHits().forEach(s -> {
-//                    ArchiveSpectrum archiveSpectrum = Converters.elasticToArchiveSpectrum(s.getContent());
-//                    try {
-//                        if (isSse) {
-//                            emitter.send(SseEmitter.event()
-//                                    .id(String.valueOf(id.incrementAndGet()))
-//                                    .name("Spectrum")
-//                                    .data(archiveSpectrum));
-//                        } else {
-//                            emitter.send(archiveSpectrum, MediaType.APPLICATION_JSON);
-//                        }
-//                        if (!isSse) {
-//                            emitter.send(NEWLINE);
-//                        }
-//                    } catch (Exception ex) {
-//                        log.error(ex.getMessage(), ex);
-//                        emitter.completeWithError(ex);
-//                    }
-//                });
-//                scroll = elasticsearchRestTemplate.searchScrollContinue(scrollId, scrollTimeInMillis, ElasticSpectrum.class, Constants.INDEX_COORDINATES);
-//                scrollId = scroll.getScrollId();
-//                scrollIds.add(scrollId);
-//            }
-//            emitter.complete();
-//            elasticsearchRestTemplate.searchScrollClear(scrollIds);
-//        });
-//        executor.shutdown();
-//    }
+    @GetMapping(path = "/stream/findByPepSequence")
+    public ResponseEntity<ResponseBodyEmitter> findByPepSequenceStream(@Valid @RequestParam String pepSequence) {
+        PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
+        CriteriaQuery query = new CriteriaQuery(new Criteria("pepSequence").expression(pepSequence)).setPageable(pageRequest);
+        ResponseBodyEmitter emitter = new ResponseBodyEmitter();
+        emitterFunc(emitter, query, false);
+        return new ResponseEntity(emitter, HttpStatus.OK);
+    }
 
     @GetMapping(path = "/sse/findByPepSequence")
     public SseEmitter findByPepSequenceSse(@Valid @RequestParam String pepSequence) {
@@ -134,6 +94,15 @@ public class SpectraController {
         executor.execute(new SseRunnable(query, sseEmitter));
         executor.shutdown();
         return sseEmitter;
+    }
+
+    @PostMapping(path = "/stream/findByProteinAccessions")
+    public ResponseEntity<ResponseBodyEmitter> findByProteinAccessionStream(@Valid @RequestBody List<String> proteinAccessions) {
+        PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
+        CriteriaQuery query = new CriteriaQuery(new Criteria("proteinAccessions.keyword").in(proteinAccessions)).setPageable(pageRequest);
+        ResponseBodyEmitter emitter = new ResponseBodyEmitter();
+        emitterFunc(emitter, query, false);
+        return new ResponseEntity(emitter, HttpStatus.OK);
     }
 
     @PostMapping(path = "/sse/findByProteinAccessions")
@@ -147,6 +116,15 @@ public class SpectraController {
         return sseEmitter;
     }
 
+    @PostMapping(path = "/stream/findByGeneAccessions")
+    public ResponseEntity<ResponseBodyEmitter> findByGeneAccessionStream(@Valid @RequestBody List<String> geneAccessions) {
+        PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
+        CriteriaQuery query = new CriteriaQuery(new Criteria("geneAccessions.keyword").in(geneAccessions)).setPageable(pageRequest);
+        ResponseBodyEmitter emitter = new ResponseBodyEmitter();
+        emitterFunc(emitter, query, false);
+        return new ResponseEntity(emitter, HttpStatus.OK);
+    }
+
     @PostMapping(path = "/sse/findByGeneAccessions")
     public SseEmitter findByGeneAccessionSse(@Valid @RequestBody List<String> geneAccessions) {
         PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
@@ -156,6 +134,47 @@ public class SpectraController {
         executor.execute(new SseRunnable(query, sseEmitter));
         executor.shutdown();
         return sseEmitter;
+    }
+
+    private void emitterFunc(ResponseBodyEmitter emitter,  CriteriaQuery query, boolean isSse) {
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            final String NEWLINE = "\n";
+
+            int scrollTimeInMillis = 60000;
+            List<String> scrollIds = new ArrayList<>();
+            SearchScrollHits<ElasticSpectrum> scroll = elasticsearchRestTemplate.searchScrollStart(scrollTimeInMillis, query, ElasticSpectrum.class, Constants.INDEX_COORDINATES);
+            String scrollId = scroll.getScrollId();
+            scrollIds.add(scrollId);
+            AtomicLong id = new AtomicLong();
+            while (scroll.hasSearchHits()) {
+                scroll.getSearchHits().forEach(s -> {
+                    ArchiveSpectrum archiveSpectrum = Converters.elasticToArchiveSpectrum(s.getContent());
+                    try {
+                        if (isSse) {
+                            emitter.send(SseEmitter.event()
+                                    .id(String.valueOf(id.incrementAndGet()))
+                                    .name("Spectrum")
+                                    .data(archiveSpectrum));
+                        } else {
+                            emitter.send(archiveSpectrum, MediaType.APPLICATION_JSON);
+                        }
+                        if (!isSse) {
+                            emitter.send(NEWLINE);
+                        }
+                    } catch (Exception ex) {
+                        log.error(ex.getMessage(), ex);
+                        emitter.completeWithError(ex);
+                    }
+                });
+                scroll = elasticsearchRestTemplate.searchScrollContinue(scrollId, scrollTimeInMillis, ElasticSpectrum.class, Constants.INDEX_COORDINATES);
+                scrollId = scroll.getScrollId();
+                scrollIds.add(scrollId);
+            }
+            emitter.complete();
+            elasticsearchRestTemplate.searchScrollClear(scrollIds);
+        });
+        executor.shutdown();
     }
 
     class SseRunnable implements Runnable {
