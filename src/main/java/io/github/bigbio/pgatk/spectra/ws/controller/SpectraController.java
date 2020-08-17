@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
 
 @RestController
 @Validated
@@ -75,142 +76,136 @@ public class SpectraController {
         return spectrumService.findByPepSequence(pepSequence, pageParams);
     }
 
-    @GetMapping(path = "/stream/findByPepSequence")
-    public ResponseEntity<ResponseBodyEmitter> findByPepSequenceStream(@Valid @RequestParam String pepSequence) {
-        ResponseBodyEmitter emitter = new ResponseBodyEmitter();
-        emitterFunc(pepSequence, emitter, true);
-        return new ResponseEntity(emitter, HttpStatus.OK);
-    }
-
-//    private void emitterFunc(String pepSequence, ResponseBodyEmitter emitter, boolean addNewline) {
-//        Stream<ElasticSpectrum> esStream = spectrumRepositoryStream.findByPepSequenceContaining(pepSequence);
+//    @GetMapping(path = "/stream/findByPepSequence")
+//    public ResponseEntity<ResponseBodyEmitter> findByPepSequenceStream(@Valid @RequestParam String pepSequence) {
+//        ResponseBodyEmitter emitter = new ResponseBodyEmitter();
+//        emitterFunc(pepSequence, emitter, false);
+//        return new ResponseEntity(emitter, HttpStatus.OK);
+//    }
+//
+//    private void emitterFunc(String pepSequence, ResponseBodyEmitter emitter, boolean isSse) {
 //        ExecutorService executor = Executors.newSingleThreadExecutor();
 //        executor.execute(() -> {
 //            final String NEWLINE = "\n";
-//            esStream.forEach(s -> {
-//                ArchiveSpectrum archiveSpectrum = Converters.elasticToArchiveSpectrum(s);
-//                try {
-//                    emitter.send(archiveSpectrum, MediaType.APPLICATION_JSON);
-//                    if(addNewline) {
-//                      emitter.send(NEWLINE);
+//            PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
+//            CriteriaQuery query = new CriteriaQuery(new Criteria("pepSequence").expression(pepSequence)).setPageable(pageRequest);
+//            int scrollTimeInMillis = 60000;
+//            List<String> scrollIds = new ArrayList<>();
+//            SearchScrollHits<ElasticSpectrum> scroll = elasticsearchRestTemplate.searchScrollStart(scrollTimeInMillis, query, ElasticSpectrum.class, Constants.INDEX_COORDINATES);
+//            String scrollId = scroll.getScrollId();
+//            scrollIds.add(scrollId);
+//            AtomicLong id = new AtomicLong();
+//            while (scroll.hasSearchHits()) {
+//                scroll.getSearchHits().forEach(s -> {
+//                    ArchiveSpectrum archiveSpectrum = Converters.elasticToArchiveSpectrum(s.getContent());
+//                    try {
+//                        if (isSse) {
+//                            emitter.send(SseEmitter.event()
+//                                    .id(String.valueOf(id.incrementAndGet()))
+//                                    .name("Spectrum")
+//                                    .data(archiveSpectrum));
+//                        } else {
+//                            emitter.send(archiveSpectrum, MediaType.APPLICATION_JSON);
+//                        }
+//                        if (!isSse) {
+//                            emitter.send(NEWLINE);
+//                        }
+//                    } catch (Exception ex) {
+//                        log.error(ex.getMessage(), ex);
+//                        emitter.completeWithError(ex);
 //                    }
-//                } catch (Exception ex) {
-//                    emitter.completeWithError(ex);
-//                }
-//            });
+//                });
+//                scroll = elasticsearchRestTemplate.searchScrollContinue(scrollId, scrollTimeInMillis, ElasticSpectrum.class, Constants.INDEX_COORDINATES);
+//                scrollId = scroll.getScrollId();
+//                scrollIds.add(scrollId);
+//            }
 //            emitter.complete();
+//            elasticsearchRestTemplate.searchScrollClear(scrollIds);
 //        });
 //        executor.shutdown();
 //    }
 
-    private void emitterFunc(String pepSequence, ResponseBodyEmitter emitter, boolean addNewline) {
+    @GetMapping(path = "/sse/findByPepSequence")
+    public SseEmitter findByPepSequenceSse(@Valid @RequestParam String pepSequence) {
+        PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
+        CriteriaQuery query = new CriteriaQuery(new Criteria("pepSequence").expression(pepSequence)).setPageable(pageRequest);
+        SseEmitter sseEmitter = new SseEmitter();
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        executor.execute(() -> {
-            final String NEWLINE = "\n";
-            PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
-            CriteriaQuery query = new CriteriaQuery(new Criteria("pepSequence").expression(pepSequence)).setPageable(pageRequest);
+        executor.execute(new SseRunnable(query, sseEmitter));
+        executor.shutdown();
+        return sseEmitter;
+    }
+
+    @PostMapping(path = "/sse/findByProteinAccessions")
+    public SseEmitter findByProteinAccessionSse(@Valid @RequestBody List<String> proteinAccessions) {
+        PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
+        CriteriaQuery query = new CriteriaQuery(new Criteria("proteinAccessions.keyword").in(proteinAccessions)).setPageable(pageRequest);
+        SseEmitter sseEmitter = new SseEmitter();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(new SseRunnable(query, sseEmitter));
+        executor.shutdown();
+        return sseEmitter;
+    }
+
+    @PostMapping(path = "/sse/findByGeneAccessions")
+    public SseEmitter findByGeneAccessionSse(@Valid @RequestBody List<String> geneAccessions) {
+        PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
+        CriteriaQuery query = new CriteriaQuery(new Criteria("geneAccessions.keyword").in(geneAccessions)).setPageable(pageRequest);
+        SseEmitter sseEmitter = new SseEmitter();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(new SseRunnable(query, sseEmitter));
+        executor.shutdown();
+        return sseEmitter;
+    }
+
+    class SseRunnable implements Runnable {
+        private final CriteriaQuery query;
+        private final  SseEmitter sseEmitter;
+
+        SseRunnable(CriteriaQuery query, SseEmitter sseEmitter) {
+            this.query = query;
+            this.sseEmitter = sseEmitter;
+        }
+
+        @Override
+        public void run() {
             int scrollTimeInMillis = 60000;
             List<String> scrollIds = new ArrayList<>();
             SearchScrollHits<ElasticSpectrum> scroll = elasticsearchRestTemplate.searchScrollStart(scrollTimeInMillis, query, ElasticSpectrum.class, Constants.INDEX_COORDINATES);
             String scrollId = scroll.getScrollId();
             scrollIds.add(scrollId);
+            AtomicLong id = new AtomicLong();
             while (scroll.hasSearchHits()) {
                 scroll.getSearchHits().forEach(s -> {
                     ArchiveSpectrum archiveSpectrum = Converters.elasticToArchiveSpectrum(s.getContent());
                     try {
-                        emitter.send(archiveSpectrum, MediaType.APPLICATION_JSON);
-                        if(addNewline) {
-                            emitter.send(NEWLINE);
-                        }
+                        SseEmitter.SseEventBuilder sseEventBuilder = SseEmitter.event()
+                                .id(String.valueOf(id.incrementAndGet()))
+                                .name("Spectrum")
+                                .data(archiveSpectrum);
+                        sseEmitter.send(sseEventBuilder);
+
                     } catch (Exception ex) {
-                        emitter.completeWithError(ex);
+//                        log.error(ex.getMessage(), ex);
+                        sseEmitter.completeWithError(ex);
                     }
                 });
                 scroll = elasticsearchRestTemplate.searchScrollContinue(scrollId, scrollTimeInMillis, ElasticSpectrum.class, Constants.INDEX_COORDINATES);
                 scrollId = scroll.getScrollId();
                 scrollIds.add(scrollId);
             }
-            emitter.complete();
+            SseEmitter.SseEventBuilder sseEventBuilder = SseEmitter.event()
+                    .id(String.valueOf(id.incrementAndGet()))
+                    .name("COMPLETE");
+            try {
+                sseEmitter.send(sseEventBuilder);
+            } catch (Exception ex) {
+//                log.error(ex.getMessage(), ex);
+                sseEmitter.completeWithError(ex);
+            }
+            sseEmitter.complete();
             elasticsearchRestTemplate.searchScrollClear(scrollIds);
-        });
-        executor.shutdown();
+        }
     }
-
-    @GetMapping(path = "/sse/findByPepSequence")
-    public SseEmitter findByPepSequenceSse(@Valid @RequestParam String pepSequence) {
-        SseEmitter sseEmitter = new SseEmitter();
-        emitterFunc(pepSequence, sseEmitter, false);
-        return sseEmitter;
-    }
-
-//    @GetMapping(path = "/stream2/findByPepSequence")
-//    public ResponseEntity<StreamingResponseBody> findByPepSequenceStream2(@Valid @RequestParam String pepSequence) {
-//        Stream<ElasticSpectrum> stream = spectrumRepositoryStream.findByPepSequenceContaining(pepSequence);
-//        final String NEWLINE = "\n";
-//        StreamingResponseBody streamOut = out -> stream.forEach(s -> {
-//            ArchiveSpectrum archiveSpectrum = Converters.elasticToArchiveSpectrum(s);
-//            try {
-//                String asString = objectMapper.writeValueAsString(archiveSpectrum) + NEWLINE;
-//                out.write(asString.getBytes());
-//            } catch (IOException e) {
-//                throw new IllegalStateException(e.getMessage(), e);
-//            }
-//        });
-//        return new ResponseEntity(streamOut, HttpStatus.OK);
-//    }
-
-//    @GetMapping(path = "/plainstream/test")
-//    public ResponseEntity<StreamingResponseBody> test1() {
-//        Integer a[] = new Integer[9999999];
-//        Arrays.fill(a, 10);
-//        List<Integer> strings = Arrays.asList(a);
-//        StreamingResponseBody streamOut = out -> strings.forEach(s -> {
-//            ArchiveSpectrum archiveSpectrum = new ArchiveSpectrum();
-//            try {
-//                String asString = objectMapper.writeValueAsString(archiveSpectrum) + "\n";
-//                asString = "1";
-//                out.write(asString.getBytes());
-//            } catch (Exception e) {
-//                throw new IllegalStateException(e.getMessage(), e);
-//            }
-//        });
-//        System.out.println("i am out 1");
-//        return new ResponseEntity(streamOut, HttpStatus.OK);
-//    }
-//
-//    @GetMapping(path = "/jsonstream/test")
-//    public ResponseEntity<ResponseBodyEmitter> test2() {
-//        ResponseBodyEmitter emitter = new ResponseBodyEmitter();
-//        emitterTestFunc(emitter);
-//        return new ResponseEntity(emitter, HttpStatus.OK);
-//    }
-//
-//    @GetMapping(path = "/sse/test")
-//    public SseEmitter test3() {
-//        SseEmitter emitter = new SseEmitter();
-//        emitterTestFunc(emitter);
-//        return emitter;
-//    }
-//
-//    private void emitterTestFunc(ResponseBodyEmitter emitter) {
-//        ExecutorService executor = Executors.newSingleThreadExecutor();
-//        Integer a[] = new Integer[99999];
-//        Arrays.fill(a, 10);
-//        List<Integer> strings = Arrays.asList(a);
-//        executor.execute(() -> {
-//            strings.forEach(s -> {
-//                ArchiveSpectrum archiveSpectrum = new ArchiveSpectrum();
-//                try {
-//                    emitter.send(archiveSpectrum, MediaType.APPLICATION_JSON);
-//                    emitter.send("\n");
-//                } catch (Exception ex) {
-//                    emitter.completeWithError(ex);
-//                }
-//            });
-//            emitter.complete();
-//        });
-//        executor.shutdown();
-//        System.out.println("i am out 2");
-//    }
 }
 

@@ -24,14 +24,17 @@ public class ElasticSpectrum {
     @Id
     private String id;
 
-    @Field(name = "usi", store = true, type = FieldType.Text)
+    @Field(name = "usi", store = true, type = FieldType.Keyword)
     private String usi;
 
-    @Field( name = "pepSequence", store = true, type = FieldType.Text)
+    @Field( name = "pepSequence", store = true, type = FieldType.Keyword)
     private String pepSequence;
 
     @Field( name = "proteinAccessions", store = true)
     private List<String> proteinAccessions;
+
+    @Field(name = "geneAccessions", store = true)
+    private List<String> geneAccessions;
 
     @Field( name = "precursorMz", store = true)
     private double precursorMz;
@@ -80,6 +83,5 @@ public class ElasticSpectrum {
 
     @Field( name = "text", store = true)
     private List<String> text;
-
 
 }

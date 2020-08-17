@@ -29,6 +29,8 @@ public class Converters {
                 .missedCleavages(es.getMissedCleavages())
                 .annotations(es.getAnnotations())
                 .qualityEstimationMethods(es.getQualityEstimationMethods())
+                .proteinAccessions(es.getProteinAccessions())
+                .geneAccessions(es.getGeneAccessions())
                 .build();
     }
 }
