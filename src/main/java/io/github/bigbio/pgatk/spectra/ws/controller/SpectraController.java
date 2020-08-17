@@ -34,6 +34,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static io.github.bigbio.pgatk.spectra.ws.utils.Constants.*;
+
 @RestController
 @Validated
 @RequestMapping("/spectra")
@@ -79,7 +81,7 @@ public class SpectraController {
     @GetMapping(path = "/stream/findByPepSequence")
     public ResponseEntity<ResponseBodyEmitter> findByPepSequenceStream(@Valid @RequestParam String pepSequence) {
         PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
-        CriteriaQuery query = new CriteriaQuery(new Criteria("pepSequence").expression(pepSequence)).setPageable(pageRequest);
+        CriteriaQuery query = new CriteriaQuery(new Criteria(PEPTIDE_SEQUENCE).expression(pepSequence)).setPageable(pageRequest);
         ResponseBodyEmitter emitter = new ResponseBodyEmitter();
         emitterFunc(emitter, query, false);
         return new ResponseEntity(emitter, HttpStatus.OK);
@@ -88,7 +90,7 @@ public class SpectraController {
     @GetMapping(path = "/sse/findByPepSequence")
     public SseEmitter findByPepSequenceSse(@Valid @RequestParam String pepSequence) {
         PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
-        CriteriaQuery query = new CriteriaQuery(new Criteria("pepSequence").expression(pepSequence)).setPageable(pageRequest);
+        CriteriaQuery query = new CriteriaQuery(new Criteria(PEPTIDE_SEQUENCE).expression(pepSequence)).setPageable(pageRequest);
         SseEmitter sseEmitter = new SseEmitter();
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(new SseRunnable(query, sseEmitter));
@@ -99,7 +101,7 @@ public class SpectraController {
     @PostMapping(path = "/stream/findByProteinAccessions")
     public ResponseEntity<ResponseBodyEmitter> findByProteinAccessionStream(@Valid @RequestBody List<String> proteinAccessions) {
         PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
-        CriteriaQuery query = new CriteriaQuery(new Criteria("proteinAccessions.keyword").in(proteinAccessions)).setPageable(pageRequest);
+        CriteriaQuery query = new CriteriaQuery(new Criteria(PROTEIN_ACCESSIONS_KEYWORD).in(proteinAccessions)).setPageable(pageRequest);
         ResponseBodyEmitter emitter = new ResponseBodyEmitter();
         emitterFunc(emitter, query, false);
         return new ResponseEntity(emitter, HttpStatus.OK);
@@ -108,7 +110,7 @@ public class SpectraController {
     @PostMapping(path = "/sse/findByProteinAccessions")
     public SseEmitter findByProteinAccessionSse(@Valid @RequestBody List<String> proteinAccessions) {
         PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
-        CriteriaQuery query = new CriteriaQuery(new Criteria("proteinAccessions.keyword").in(proteinAccessions)).setPageable(pageRequest);
+        CriteriaQuery query = new CriteriaQuery(new Criteria(PROTEIN_ACCESSIONS_KEYWORD).in(proteinAccessions)).setPageable(pageRequest);
         SseEmitter sseEmitter = new SseEmitter();
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(new SseRunnable(query, sseEmitter));
@@ -119,7 +121,7 @@ public class SpectraController {
     @PostMapping(path = "/stream/findByGeneAccessions")
     public ResponseEntity<ResponseBodyEmitter> findByGeneAccessionStream(@Valid @RequestBody List<String> geneAccessions) {
         PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
-        CriteriaQuery query = new CriteriaQuery(new Criteria("geneAccessions.keyword").in(geneAccessions)).setPageable(pageRequest);
+        CriteriaQuery query = new CriteriaQuery(new Criteria(GENE_ACCESSIONS_KEYWORD).in(geneAccessions)).setPageable(pageRequest);
         ResponseBodyEmitter emitter = new ResponseBodyEmitter();
         emitterFunc(emitter, query, false);
         return new ResponseEntity(emitter, HttpStatus.OK);
@@ -128,7 +130,7 @@ public class SpectraController {
     @PostMapping(path = "/sse/findByGeneAccessions")
     public SseEmitter findByGeneAccessionSse(@Valid @RequestBody List<String> geneAccessions) {
         PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
-        CriteriaQuery query = new CriteriaQuery(new Criteria("geneAccessions.keyword").in(geneAccessions)).setPageable(pageRequest);
+        CriteriaQuery query = new CriteriaQuery(new Criteria(GENE_ACCESSIONS_KEYWORD).in(geneAccessions)).setPageable(pageRequest);
         SseEmitter sseEmitter = new SseEmitter();
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(new SseRunnable(query, sseEmitter));
