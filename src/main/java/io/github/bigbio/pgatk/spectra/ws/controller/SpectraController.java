@@ -70,27 +70,30 @@ public class SpectraController {
     }
 
     @GetMapping("/findByPepSequence")
-    public List<ArchiveSpectrum> findByPepSequence(@Valid @RequestParam String pepSequence,
+    public List<ArchiveSpectrum> findByPepSequence(@Valid @RequestParam String peptideSequenceRegex,
                                                    @RequestParam(value = "page", defaultValue = "0") Integer page,
                                                    @RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize) {
 
+        WsUtils.validatePeptideSeqRegex(peptideSequenceRegex);
         Tuple<Integer, Integer> pageParams = WsUtils.validatePageLimit(page, pageSize);
-        return spectrumService.findByPepSequence(pepSequence, pageParams);
+        return spectrumService.findByPepSequence(peptideSequenceRegex, pageParams);
     }
 
     @GetMapping(path = "/stream/findByPepSequence")
-    public ResponseEntity<ResponseBodyEmitter> findByPepSequenceStream(@Valid @RequestParam String pepSequence) {
+    public ResponseEntity<ResponseBodyEmitter> findByPepSequenceStream(@Valid @RequestParam String peptideSequenceRegex) {
+        WsUtils.validatePeptideSeqRegex(peptideSequenceRegex);
         PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
-        CriteriaQuery query = new CriteriaQuery(new Criteria(PEPTIDE_SEQUENCE).expression(pepSequence)).setPageable(pageRequest);
+        CriteriaQuery query = new CriteriaQuery(new Criteria(PEPTIDE_SEQUENCE).expression(peptideSequenceRegex)).setPageable(pageRequest);
         ResponseBodyEmitter emitter = new ResponseBodyEmitter();
         emitterFunc(emitter, query, false);
         return new ResponseEntity(emitter, HttpStatus.OK);
     }
 
     @GetMapping(path = "/sse/findByPepSequence")
-    public SseEmitter findByPepSequenceSse(@Valid @RequestParam String pepSequence) {
+    public SseEmitter findByPepSequenceSse(@Valid @RequestParam String peptideSequenceRegex) {
+        WsUtils.validatePeptideSeqRegex(peptideSequenceRegex);
         PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
-        CriteriaQuery query = new CriteriaQuery(new Criteria(PEPTIDE_SEQUENCE).expression(pepSequence)).setPageable(pageRequest);
+        CriteriaQuery query = new CriteriaQuery(new Criteria(PEPTIDE_SEQUENCE).expression(peptideSequenceRegex)).setPageable(pageRequest);
         SseEmitter sseEmitter = new SseEmitter();
         ExecutorService executor = Executors.newSingleThreadExecutor();
         executor.execute(new SseRunnable(query, sseEmitter));
@@ -202,7 +205,7 @@ public class SpectraController {
                     try {
                         SseEmitter.SseEventBuilder sseEventBuilder = SseEmitter.event()
                                 .id(String.valueOf(id.incrementAndGet()))
-                                .name("Spectrum")
+                                .name("spectrum")
                                 .data(archiveSpectrum);
                         sseEmitter.send(sseEventBuilder);
 
@@ -217,7 +220,8 @@ public class SpectraController {
             }
             SseEmitter.SseEventBuilder sseEventBuilder = SseEmitter.event()
                     .id(String.valueOf(id.incrementAndGet()))
-                    .name("COMPLETE");
+                    .name("done")
+                    .data("");
             try {
                 sseEmitter.send(sseEventBuilder);
             } catch (Exception ex) {
