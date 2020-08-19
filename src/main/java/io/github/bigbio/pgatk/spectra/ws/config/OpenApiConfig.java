@@ -5,6 +5,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.security.SecurityRequirement;
 import io.swagger.v3.oas.models.security.SecurityScheme;
+import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,12 +13,16 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class OpenApiConfig {
 
+    @Value("${server.servlet.contextPath}")
+    String contextPath;
+
     @Bean
     public OpenAPI customOpenAPI() {
         final String securitySchemeName = "SpectraWsAuth";
         final String apiTitle = "Spectra-ws API";
         final String apiVersion = "1.0";
         return new OpenAPI()
+                .addServersItem(new Server().url(contextPath))
                 .addSecurityItem(new SecurityRequirement().addList(securitySchemeName)) //allows to add global security schema and to get rid of writing security to @Operation of each controller method.
                 .components(
                         new Components()
