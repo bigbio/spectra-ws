@@ -61,23 +61,43 @@ public class SpectraController {
         return spectrumService.getById(usi);
     }
 
-    @PostMapping("/findByMultipleUsis")
-    public List<ArchiveSpectrum> findByMultipleUsis(@Valid @RequestBody List<String> usis,
-                                                    @RequestParam(value = "page", defaultValue = "0") Integer page,
-                                                    @RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize) {
-        Tuple<Integer, Integer> pageParams = WsUtils.validatePageLimit(page, pageSize);
-        return spectrumService.getByIds(usis, pageParams);
+//    @PostMapping("/findByMultipleUsis")
+//    public List<ArchiveSpectrum> findByMultipleUsis(@Valid @RequestBody List<String> usis,
+//                                                    @RequestParam(value = "page", defaultValue = "0") Integer page,
+//                                                    @RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize) {
+//        Tuple<Integer, Integer> pageParams = WsUtils.validatePageLimit(page, pageSize);
+//        return spectrumService.getByIds(usis, pageParams);
+//    }
+
+    @PostMapping("/stream/findByMultipleUsis")
+    public ResponseEntity<ResponseBodyEmitter> findByMultipleUsisStream(@Valid @RequestBody List<String> usis) {
+        PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
+        CriteriaQuery query = new CriteriaQuery(new Criteria(Constants.USI_KEYWORD).in(usis)).setPageable(pageRequest);
+        ResponseBodyEmitter emitter = new ResponseBodyEmitter();
+        emitterFunc(emitter, query, false);
+        return new ResponseEntity(emitter, HttpStatus.OK);
     }
 
-    @GetMapping("/findByPepSequence")
-    public List<ArchiveSpectrum> findByPepSequence(@Valid @RequestParam String peptideSequenceRegex,
-                                                   @RequestParam(value = "page", defaultValue = "0") Integer page,
-                                                   @RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize) {
-
-        WsUtils.validatePeptideSeqRegex(peptideSequenceRegex);
-        Tuple<Integer, Integer> pageParams = WsUtils.validatePageLimit(page, pageSize);
-        return spectrumService.findByPepSequence(peptideSequenceRegex, pageParams);
+    @PostMapping(path = "/sse/findByMultipleUsis")
+    public SseEmitter findByMultipleUsisSse(@Valid @RequestBody List<String> usis) {
+        PageRequest pageRequest = PageRequest.of(0, Constants.MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
+        CriteriaQuery query = new CriteriaQuery(new Criteria(Constants.USI_KEYWORD).in(usis)).setPageable(pageRequest);
+        SseEmitter sseEmitter = new SseEmitter();
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        executor.execute(new SseRunnable(query, sseEmitter));
+        executor.shutdown();
+        return sseEmitter;
     }
+
+//    @GetMapping("/findByPepSequence")
+//    public List<ArchiveSpectrum> findByPepSequence(@Valid @RequestParam String peptideSequenceRegex,
+//                                                   @RequestParam(value = "page", defaultValue = "0") Integer page,
+//                                                   @RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize) {
+//
+//        WsUtils.validatePeptideSeqRegex(peptideSequenceRegex);
+//        Tuple<Integer, Integer> pageParams = WsUtils.validatePageLimit(page, pageSize);
+//        return spectrumService.findByPepSequence(peptideSequenceRegex, pageParams);
+//    }
 
     @GetMapping(path = "/stream/findByPepSequence")
     public ResponseEntity<ResponseBodyEmitter> findByPepSequenceStream(@Valid @RequestParam String peptideSequenceRegex) {
