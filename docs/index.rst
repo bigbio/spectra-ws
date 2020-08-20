@@ -8,9 +8,13 @@ Contents
    :maxdepth: 1
 
    introduction
-   .. toctree::
-      :maxdepth: 3
 
-   get_by_usi
-   .. toctree::
-      :maxdepth: 3
+   find_by_usi
+
+   find_by_multiple_usi
+
+   find_by_peptide_sequence
+
+   find_by_protein_accession
+
+   find_by_gene_accession
