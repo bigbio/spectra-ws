@@ -19,9 +19,18 @@ Curl
 
    curl -X GET "https://www.ebi.ac.uk/pride/multiomics/ws/spectra/sse/findByPepSequence?peptideSequenceRegex=AVC*KR" -H "accept: */*"
 
+   OR
+
+   curl -X GET "https://www.ebi.ac.uk/pride/multiomics/ws/spectra/stream/findByPepSequence?peptideSequenceRegex=AVC*KR" -H "accept: */*"
+
+
 
 Python sample code
 ------------------
+
+Using SSEs
+***********
+
 .. note::
    pip install sseclient-py
 
@@ -49,4 +58,26 @@ Python sample code
    if __name__ == "__main__":
        main()
 
+
+Using Stream
+*************
+
+.. code-block:: python
+
+   import requests
+
+   url = 'https://www.ebi.ac.uk/pride/multiomics/ws/spectra/stream/findByPepSequence?peptideSequenceRegex=AVC*KR'
+
+   def main1():
+       response = requests.get(url, stream=True)
+       if response.status_code != 200:
+           text = str(response.status_code) + ': ' + response.text
+           raise Exception(text)
+       for line in response.iter_lines():
+           if line:
+               print(line)
+
+
+   if __name__ == "__main__":
+       main1()
 
