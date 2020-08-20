@@ -1,5 +1,5 @@
 Welcome to Spectra webservice documentation!
-=========================================
+=============================================
 
 Contents
 --------
@@ -9,4 +9,8 @@ Contents
 
    introduction
    .. toctree::
-   :maxdepth: 3
+      :maxdepth: 3
+
+   get_by_usi
+   .. toctree::
+      :maxdepth: 3
