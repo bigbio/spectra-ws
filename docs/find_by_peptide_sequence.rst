@@ -7,7 +7,9 @@ We recommend not to use browser for this as the amount of data could be really h
 
 .. warning::
    'peptideSequenceRegex' parameter should contain at-least 4 valid characters
+
    valid: AS*DF, ASDF* etc.,
+
    invalid: AS*F, ASF* etc.,
 
 
@@ -25,7 +27,7 @@ Python sample code
 
 .. code-block:: python
 
-   from sseclient import SSEClient
+   from sseclient import SSEClient   #pip install sseclient-py
    import requests
 
    url = 'https://www.ebi.ac.uk/pride/multiomics/ws/spectra/sse/findByPepSequence?peptideSequenceRegex=AVC*KR'

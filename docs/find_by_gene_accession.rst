@@ -20,7 +20,7 @@ Python sample code
 
 .. code-block:: python
 
-   from sseclient import SSEClient
+   from sseclient import SSEClient   #pip install sseclient-py
    import requests
 
    url = 'https://www.ebi.ac.uk/pride/multiomics/ws/spectra/sse/findByGeneAccessions'
