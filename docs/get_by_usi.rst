@@ -8,6 +8,7 @@ https://www.ebi.ac.uk/pride/multiomics/ws/swagger-ui/index.html?url=/pride/multi
 Curl
 -----
 .. code-block:: bash
+
    curl -X GET "https://www.ebi.ac.uk/pride/multiomics/ws/spectra/findByUsi?usi=NIST%3Acptac2_human_hcd_itraq_selected_part1_2015.msp%3Aindex%3A80003" -H "accept: */*"
 
 Python sample code
