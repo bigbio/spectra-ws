@@ -1,4 +1,4 @@
-Get Spectrum using USI
+Get by USI
 =======================
 
 USI(universal spectrum identifier) is a unique representation for a mass spectrum within a resource or a dataset `Documentation <http://www.psidev.info/usi>`_. In summary, a USI is a combination of a dataset accession or collection (e.g. spectral library); a file within that collection and an scan or index number withing the file. Inm addition, the USI can contains the information about the peptide sequence and PTMs.

@@ -1,10 +1,10 @@
-Get Spectra using list of Gene accessions
+Search by gene accessions
 ==========================================
 
 Swagger
 -------
-We recommend not to use browser for this as the amount of data could be really huge
 
+We recommend not to use browser for this as the amount of data could be really huge
 
 Curl
 -----
