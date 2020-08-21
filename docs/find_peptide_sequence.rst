@@ -1,4 +1,4 @@
-Get Spectra using Peptide sequence
+Search by peptide sequence
 ===================================
 
 Swagger

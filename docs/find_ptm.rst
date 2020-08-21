@@ -1,4 +1,4 @@
-Get Spectra using Ptm & Peptide Sequence
+Search by ptm & peptide sequence
 ==========================================
 
 Swagger

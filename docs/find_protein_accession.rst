@@ -1,4 +1,4 @@
-Get Spectra using list of Protein accessions
+Search by protein accessions
 =============================================
 
 Swagger
