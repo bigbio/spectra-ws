@@ -7,8 +7,10 @@ We recommend not to use browser for this as the amount of data could be really h
 
 Sample request payloads
 ************************
+
+case1:
 .. code-block:: javascript
-    1)
+
     {
         "peptideSequenceRegex": "AQLG*",
         "positions": [9, 16],
@@ -16,7 +18,9 @@ Sample request payloads
         "ptmValue": "iTRAQ4plex"
     }
 
-    2)
+case2:
+.. code-block:: javascript
+
     {
         "peptideSequenceRegex": "AQLG*",
         "positions": [9, 16],
@@ -24,7 +28,9 @@ Sample request payloads
         "ptmValue": "iTRAQ4plex"
     }
 
-    3)
+case3:
+.. code-block:: javascript
+
     {
         "peptideSequenceRegex": "AQLG*",
         "positions": [9, 16],
