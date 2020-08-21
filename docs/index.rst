@@ -9,7 +9,7 @@ Contents
 
    introduction
 
-   Find USI
+   find usi
 
    Find Multiple USI
 
