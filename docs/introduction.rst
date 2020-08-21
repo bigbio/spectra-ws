@@ -69,4 +69,4 @@ The mass spectrum attributes can be divided in three main groups:
 
 - statistical assessment: additional quality and statistical assessment scores such as search engine scores, p-values, q-values.
 
-
+If the information is not available empty lists or `null` values are provided.
