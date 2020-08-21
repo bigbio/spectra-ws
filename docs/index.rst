@@ -1,4 +1,4 @@
-Welcome to Spectra webservice documentation!
+Welcome to mslookup webservice documentation!
 =============================================
 
 Contents
@@ -7,14 +7,14 @@ Contents
 .. toctree::
    :maxdepth: 1
 
-   introduction
+   Introduction
 
-   find_by_usi
+   Find USI
 
-   find_by_multiple_usi
+   Find Multiple USI
 
-   find_by_peptide_sequence
+   Find peptide sequence
 
-   find_by_protein_accession
+   Find protein accession
 
-   find_by_gene_accession
+   Find gene accession
