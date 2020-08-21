@@ -9,17 +9,18 @@ Sample request payloads
 ------------------------
 
 sample1
+
 .. code-block:: JSON
 
-    {
-        "peptideSequenceRegex": "AQLG*",
-        "positions": [9, 16],
-        "ptmKey": "name",
-        "ptmValue": "iTRAQ4plex"
-
-    }
+   {
+    "peptideSequenceRegex": "AQLG*",
+    "positions": [9, 16],
+    "ptmKey": "name",
+    "ptmValue": "iTRAQ4plex"
+   }
 
 sample2
+
 .. code-block:: JSON
 
    {
@@ -27,19 +28,18 @@ sample2
     "positions": [9, 16],
     "ptmKey": "accession",
     "ptmValue": "UNIMOD:214"
-
    }
 
 sample3
+
 .. code-block:: JSON
 
-    {
-        "peptideSequenceRegex": "AQLG*",
-        "positions": [9, 16],
-        "ptmKey": "mass",
-        "ptmValue": "144.102063"
-
-    }
+   {
+    "peptideSequenceRegex": "AQLG*",
+    "positions": [9, 16],
+    "ptmKey": "mass",
+    "ptmValue": "144.102063"
+  }
 
 .. warning::
    'peptideSequenceRegex' parameter should contain at-least 4 valid characters
