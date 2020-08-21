@@ -63,9 +63,9 @@ The mass spectrum attributes can be divided in three main groups:
 - biology properties:
     - Protein accessions in ENSEMBL and UNIPROT that contains the corresponding peptides; gene accessions which represent a list of gene names, gene and transcript accessions from ENSEMBL that contains the corresponding peptides.
     - Post-translational modifications: a list of post-translational modifications identified by mass spectrometry including position, monoisotopic mass, and UNIMOD accession if available.
-    - Additional metadata: species, sample conditions, tissue, cell-line.
+    - Additional metadata: species, sample conditions, tissue, cell-line, proteomeXchange project accessions.
 
-- mass spectrometry properties: Spectrum information including (precursor mz, charge and peak list), additional information such as retention time and missedclevages.
+- mass spectrometry properties: Spectrum information including (precursor mz, charge and peak list), additional information such as retention time and missed-cleavages.
 
 - statistical assessment: additional quality and statistical assessment scores such as search engine scores, p-values, q-values.
 
