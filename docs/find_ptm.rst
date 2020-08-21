@@ -6,9 +6,9 @@ Swagger
 We recommend not to use browser for this as the amount of data could be really huge
 
 Sample request payloads
-************************
+------------------------
 
-case1:
+sample1
 .. code-block:: javascript
 
     {
@@ -18,7 +18,7 @@ case1:
         "ptmValue": "iTRAQ4plex"
     }
 
-case2:
+sample2
 .. code-block:: javascript
 
     {
@@ -28,7 +28,7 @@ case2:
         "ptmValue": "iTRAQ4plex"
     }
 
-case3:
+sample3
 .. code-block:: javascript
 
     {
