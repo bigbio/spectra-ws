@@ -1,4 +1,4 @@
-:information_source: Full Documentation with code samples : https://spectra-ws.readthedocs.io/
+:green_book: Full Documentation with code samples : https://spectra-ws.readthedocs.io/
 
 
 This is a Restful API that provides a programatic interface to access to peptide evidences previously identified in mass spectrometry experiments.
