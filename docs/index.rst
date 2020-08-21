@@ -18,3 +18,5 @@ Contents
    find_protein_accession
 
    find_gene_accession
+
+   find_ptm

@@ -30,8 +30,11 @@ public class WsUtils {
     }
 
     public static Tuple<Boolean, String> validatePeptideSeqRegex(String pepSeq) {
+        if (pepSeq == null) {
+            throw new IllegalArgumentException("PeptideSequenceRegex can't be null");
+        }
         String s = pepSeq.replaceAll("[^A-Z]", "");
-        if (s.length() < 4) {
+        if (s.trim().length() < 4) {
             throw new IllegalArgumentException("PeptideSequence should contain at least 4 valid characters");
         }
         return new Tuple<>(true, "");
