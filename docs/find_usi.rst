@@ -10,7 +10,8 @@ If you want to know more about USI, `USI Specification <http://www.psidev.info/u
 
 Swagger
 -------
-https://www.ebi.ac.uk/pride/multiomics/ws/swagger-ui/index.html?url=/pride/multiomics/ws/api-docs&configUrl=/pride/multiomics/ws/api-docs/swagger-config#/Spectra/findByUsi
+
+.. note:: https://www.ebi.ac.uk/pride/multiomics/ws/swagger-ui/index.html?url=/pride/multiomics/ws/api-docs&configUrl=/pride/multiomics/ws/api-docs/swagger-config#/Spectra/findByUsi
 
 Curl
 -----
