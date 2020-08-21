@@ -1,5 +1,5 @@
-Get Spectra using Peptide sequence
-===================================
+Get Spectra using Ptm & Peptide Sequence
+==========================================
 
 Swagger
 -------
