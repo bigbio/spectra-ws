@@ -9,7 +9,7 @@ Sample request payloads
 ------------------------
 
 sample1
-.. code-block:: javascript
+.. code-block:: JSON
 
     {
         "peptideSequenceRegex": "AQLG*",
@@ -19,17 +19,17 @@ sample1
     }
 
 sample2
-.. code-block:: javascript
+.. code-block:: JSON
 
-    {
-        "peptideSequenceRegex": "AQLG*",
-        "positions": [9, 16],
-        "ptmKey": "accession",
-        "ptmValue": "iTRAQ4plex"
-    }
+   {
+    "peptideSequenceRegex": "AQLG*",
+    "positions": [9, 16],
+    "ptmKey": "accession",
+    "ptmValue": "iTRAQ4plex"
+   }
 
 sample3
-.. code-block:: javascript
+.. code-block:: JSON
 
     {
         "peptideSequenceRegex": "AQLG*",
