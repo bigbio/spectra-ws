@@ -9,7 +9,7 @@ Contents
 
    introduction
 
-   find usi
+   find_usi
 
    Find Multiple USI
 
