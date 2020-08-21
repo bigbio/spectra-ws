@@ -9,3 +9,45 @@ The MSLookup service provides mass spectrometry evidences for peptides, with spe
 
 .. code-block:: json
 
+   {
+     "id": "NIST:cptac2_human_hcd_itraq_selected_part1_2015.msp:index:80003",
+     "usi": "NIST:cptac2_human_hcd_itraq_selected_part1_2015.msp:index:80003",
+     "pepSequence": "AQLGVQAFADALLIIPK",
+     "proteinAccessions": [ "P40227-2", "ENSP00000275603.4"],
+     "geneAccessions": [CCT6A","ENSG00000146731.11","ENST00000335503.3"],
+     "precursorMz": 514.8157,
+     "precursorCharge": 4,
+     "projectAssays": null,
+     "pxProjects": null,
+     "species": [],
+     "modifications": [
+         {
+           "neutralLoss": null,
+           "positionMap": [
+              {
+                "key": 0,
+                "value": []
+              },
+              {
+                "key": 16,
+                "value": []
+              }
+            ],
+           "modification": {
+              "cvLabel": "UNIMOD",
+              "accession": "UNIMOD:214",
+              "name": "iTRAQ4plex",
+              "value": "144.102063"
+           },
+          "attributes": null
+         }
+     ],
+     "masses": [145.1084,199.1806,458.2939],
+     "intensities": [5123.7,6716.8,2049.7],
+     "retentionTime": null,
+     "properties": null,
+     "missedCleavages": 0,
+     "annotations": null,
+     "qualityEstimationMethods": [],
+     "text": null
+   }
