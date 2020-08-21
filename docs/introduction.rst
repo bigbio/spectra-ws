@@ -1,9 +1,12 @@
 MsLookup Webservice
---------------------
+================
 
 The MSLoopkup web service is a Restful API that provides a programatic interface to access to peptide evidences previously identified in mass spectrometry experiments.
 
 .. note:: The API is published in the following URL: https://www.ebi.ac.uk/pride/multiomics/ws
+
+Mass spectrum JSON structure
+---------------------------------
 
 The MSLookup service provides mass spectrometry evidences for peptides, with special focus on modified peptides (PTMs - posttranslational modifications) and single aminoacid variants. The structure of the spectra provided on each endpoint is the following:
 
@@ -51,3 +54,19 @@ The MSLookup service provides mass spectrometry evidences for peptides, with spe
      "qualityEstimationMethods": [],
      "text": null
    }
+
+Main spectra attributes
+-----------------------
+
+The mass spectrum attributes can be divided in three main groups:
+
+- biology properties:
+    - Protein accessions in ENSEMBL and UNIPROT that contains the corresponding peptides; gene accessions which represent a list of gene names, gene and transcript accessions from ENSEMBL that contains the corresponding peptides.
+    - Post-translational modifications: a list of post-translational modifications identified by mass spectrometry including position, monoisotopic mass, and UNIMOD accession if available.
+    - Additional metadata: species, sample conditions, tissue, cell-line.
+
+- mass spectrometry properties: Spectrum information including (precursor mz, charge and peak list), additional information such as retention time and missedclevages.
+
+- statistical assessment: additional quality and statistical assessment scores such as search engine scores, p-values, q-values.
+
+If the information is not available empty lists or `null` values are provided.
