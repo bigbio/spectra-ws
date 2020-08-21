@@ -11,10 +11,10 @@ Contents
 
    find_usi
 
-   Find Multiple USI
+   find_multiple_usi
 
-   Find peptide sequence
+   find_peptide_sequence
 
-   Find protein accession
+   find_protein_accession
 
-   Find gene accession
+   find_gene_accession
