@@ -16,6 +16,7 @@ sample1
         "positions": [9, 16],
         "ptmKey": "name",
         "ptmValue": "iTRAQ4plex"
+
     }
 
 sample2
@@ -25,7 +26,8 @@ sample2
     "peptideSequenceRegex": "AQLG*",
     "positions": [9, 16],
     "ptmKey": "accession",
-    "ptmValue": "iTRAQ4plex"
+    "ptmValue": "UNIMOD:214"
+
    }
 
 sample3
@@ -36,6 +38,7 @@ sample3
         "positions": [9, 16],
         "ptmKey": "mass",
         "ptmValue": "144.102063"
+
     }
 
 .. warning::
