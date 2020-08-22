@@ -2,6 +2,7 @@ package io.github.bigbio.pgatk.spectra.ws.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.github.bigbio.pgatk.io.pride.ArchiveSpectrum;
+import io.github.bigbio.pgatk.io.utils.Tuple;
 import io.github.bigbio.pgatk.spectra.ws.model.ElasticSpectrum;
 import io.github.bigbio.pgatk.spectra.ws.model.PtmKey;
 import io.github.bigbio.pgatk.spectra.ws.model.PtmRequest;
@@ -89,15 +90,15 @@ public class SpectraController {
         return getSseEmitter(query, null);
     }
 
-//    @GetMapping("/findByPepSequence")
-//    public List<ArchiveSpectrum> findByPepSequence(@Valid @RequestParam String peptideSequenceRegex,
-//                                                   @RequestParam(value = "page", defaultValue = "0") Integer page,
-//                                                   @RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize) {
-//
-//        WsUtils.validatePeptideSeqRegex(peptideSequenceRegex);
-//        Tuple<Integer, Integer> pageParams = WsUtils.validatePageLimit(page, pageSize);
-//        return spectrumService.findByPepSequence(peptideSequenceRegex, pageParams);
-//    }
+    @GetMapping("/findByPepSequence")
+    public List<ArchiveSpectrum> findByPepSequence(@Valid @RequestParam String peptideSequenceRegex,
+                                                   @RequestParam(value = "page", defaultValue = "0") Integer page,
+                                                   @RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize) {
+
+        WsUtils.validatePeptideSeqRegex(peptideSequenceRegex);
+        Tuple<Integer, Integer> pageParams = WsUtils.validatePageLimit(page, pageSize);
+        return spectrumService.findByPepSequence(peptideSequenceRegex, pageParams);
+    }
 
     @GetMapping(path = "/stream/findByPepSequence")
     public ResponseEntity<ResponseBodyEmitter> findByPepSequenceStream(@Valid @RequestParam String peptideSequenceRegex) {
