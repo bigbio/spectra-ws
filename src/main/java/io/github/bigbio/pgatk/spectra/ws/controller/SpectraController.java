@@ -100,6 +100,13 @@ public class SpectraController {
         return spectrumService.findByPepSequence(peptideSequenceRegex, pageParams);
     }
 
+    @GetMapping("/findByPepSequence/count")
+    public Long findByPepSequenceCount(@Valid @RequestParam String peptideSequenceRegex) {
+
+        WsUtils.validatePeptideSeqRegex(peptideSequenceRegex);
+        return spectrumService.findByPepSequenceCount(peptideSequenceRegex);
+    }
+
     @GetMapping(path = "/stream/findByPepSequence")
     public ResponseEntity<ResponseBodyEmitter> findByPepSequenceStream(@Valid @RequestParam String peptideSequenceRegex) {
         WsUtils.validatePeptideSeqRegex(peptideSequenceRegex);

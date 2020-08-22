@@ -75,5 +75,10 @@ public class SpectrumService {
         return archiveSpectrums;
     }
 
+    public Long findByPepSequenceCount(String pepSequence) {
+        CriteriaQuery query = new CriteriaQuery(new Criteria("pepSequence").expression(pepSequence));
+        return elasticsearchRestTemplate.count(query, ElasticSpectrum.class, Constants.INDEX_COORDINATES);
+    }
+
 }
 
