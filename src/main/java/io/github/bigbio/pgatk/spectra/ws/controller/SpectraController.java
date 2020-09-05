@@ -159,18 +159,30 @@ public class SpectraController {
         if (ptmKey == null || GeneralUtils.isEmpty(ptmValue)) {
             throw new IllegalArgumentException("ptmKey should be one of these: 'name, accession, mass' and ptmValue should be it's corresponding value");
         }
+
         PageRequest pageRequest = PageRequest.of(0, MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, USI_KEYWORD));
         Criteria criteria = new Criteria(PEPTIDE_SEQUENCE).expression(peptideSequenceRegex)
                 .and(new Criteria(ptmKey.getElastname()).is(ptmValue));
-        Criteria posCriteria;
+
         if (positions != null && positions.size() > 0) {
             int i = 0;
-            posCriteria = new Criteria(PTM_MODIFICATION_POSITION_MAP_KEY).is(positions.get(i));
+            Criteria posCriteria = new Criteria(PTM_MODIFICATION_POSITION_MAP_KEY).is(positions.get(i));
             while (++i < positions.size()) {
                 posCriteria = posCriteria.or(new Criteria(PTM_MODIFICATION_POSITION_MAP_KEY).is(positions.get(i)));
             }
             criteria = criteria.and(posCriteria);
         }
+
+        List<String> geneAccessions = ptmRequest.getGeneAccessions();
+        if(geneAccessions != null && !geneAccessions.isEmpty()) {
+            criteria = criteria.and(new Criteria(GENE_ACCESSIONS_KEYWORD).in(geneAccessions));
+        }
+
+        List<String> proteinAccessions = ptmRequest.getProteinAccessions();
+        if(proteinAccessions != null && !proteinAccessions.isEmpty()) {
+            criteria = criteria.and(new Criteria(PROTEIN_ACCESSIONS_KEYWORD).in(proteinAccessions));
+        }
+
         return new CriteriaQuery(criteria).setPageable(pageRequest);
     }
 }

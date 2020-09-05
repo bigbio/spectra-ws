@@ -6,8 +6,10 @@ import java.util.List;
 
 @Data
 public class PtmRequest {
-    String peptideSequenceRegex;
-    List<Integer> positions;
-    PtmKey ptmKey;
-    String ptmValue;
+    private String peptideSequenceRegex;
+    private List<Integer> positions;
+    private PtmKey ptmKey;
+    private String ptmValue;
+    private List<String> geneAccessions;
+    private List<String> proteinAccessions;
 }
