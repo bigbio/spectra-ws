@@ -47,6 +47,9 @@ sample3
     "geneAccessions": ["ENST00000335503.3", "CCT6A"]
   }
 
+.. Note::
+    'proteinAccessions' & 'geneAccessions' are optional filters.
+
 .. warning::
    'peptideSequenceRegex' parameter should contain at-least 4 valid characters
 
