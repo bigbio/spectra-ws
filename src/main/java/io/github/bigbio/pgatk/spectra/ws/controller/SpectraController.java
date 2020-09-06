@@ -3,6 +3,7 @@ package io.github.bigbio.pgatk.spectra.ws.controller;
 import io.github.bigbio.pgatk.io.pride.ArchiveSpectrum;
 import io.github.bigbio.pgatk.io.utils.Tuple;
 import io.github.bigbio.pgatk.spectra.ws.model.ElasticSpectrum;
+import io.github.bigbio.pgatk.spectra.ws.model.GenericRequest;
 import io.github.bigbio.pgatk.spectra.ws.model.PtmKey;
 import io.github.bigbio.pgatk.spectra.ws.model.PtmRequest;
 import io.github.bigbio.pgatk.spectra.ws.service.SpectrumService;
@@ -150,6 +151,75 @@ public class SpectraController {
         return spectrumService.getSseEmitter(query, filterFunc);
     }
 
+    @PostMapping("/findByGenericRequest")
+    public List<ArchiveSpectrum> findByGenericRequest(@RequestBody GenericRequest genericRequest,
+                                                      @RequestParam(value = "page", defaultValue = "0") Integer page,
+                                                      @RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize) {
+        Tuple<Integer, Integer> pageParams = WsUtils.validatePageLimit(page, pageSize);
+        CriteriaQuery query = getQueryForGenericRequest(genericRequest, false);
+        return spectrumService.findByQuery(query, pageParams);
+    }
+
+    @PostMapping("/findByGenericRequest/count")
+    public Long findByGenericRequestCount(@RequestBody GenericRequest genericRequest) {
+        CriteriaQuery query = getQueryForGenericRequest(genericRequest, false);
+        return spectrumService.getCountForQuery(query);
+    }
+
+    @PostMapping(path = "/stream/findByGenericRequest")
+    public ResponseEntity<ResponseBodyEmitter> findByGenericRequestStream(@RequestBody GenericRequest genericRequest) {
+        CriteriaQuery query = getQueryForGenericRequest(genericRequest, true);
+        ResponseBodyEmitter emitter = spectrumService.getStreamEmitter(query, null);
+        return new ResponseEntity(emitter, HttpStatus.OK);
+    }
+
+    @PostMapping(path = "/sse/findByGenericRequest")
+    public SseEmitter findByGenericRequestSee(@RequestBody GenericRequest genericRequest) {
+        CriteriaQuery query = getQueryForGenericRequest(genericRequest, true);
+        return spectrumService.getSseEmitter(query, null);
+    }
+
+    private CriteriaQuery getQueryForGenericRequest(GenericRequest genericRequest, boolean isStreamOrSse) {
+        String peptideSequenceRegex = genericRequest.getPeptideSequenceRegex();
+        Criteria criteria = new Criteria();
+        if (peptideSequenceRegex != null && !peptideSequenceRegex.isEmpty()) {
+            WsUtils.validatePeptideSeqRegex(peptideSequenceRegex);
+            criteria = criteria.and(new Criteria(PEPTIDE_SEQUENCE).expression(peptideSequenceRegex));
+        }
+
+        List<String> geneAccessions = genericRequest.getGeneAccessions();
+        if (geneAccessions != null && !geneAccessions.isEmpty()) {
+            criteria = criteria.and(new Criteria(GENE_ACCESSIONS_KEYWORD).in(geneAccessions));
+        }
+
+        List<String> proteinAccessions = genericRequest.getProteinAccessions();
+        if (proteinAccessions != null && !proteinAccessions.isEmpty()) {
+            criteria = criteria.and(new Criteria(PROTEIN_ACCESSIONS_KEYWORD).in(proteinAccessions));
+        }
+
+        GenericRequest.Ptm ptm = genericRequest.getPtm();
+        if (ptm != null) {
+            PtmKey ptmKey = ptm.getPtmKey();
+            String ptmValue = ptm.getPtmValue();
+            if (ptmKey == null || GeneralUtils.isEmpty(ptmValue)) {
+                throw new IllegalArgumentException("ptmKey should be one of these: 'name, accession, mass' and ptmValue should be it's corresponding value");
+            }
+            criteria = criteria.and(new Criteria(ptmKey.getElastname()).is(ptmValue));
+        }
+
+        List<Criteria> criteriaChain = criteria.getCriteriaChain();
+        if (criteriaChain.isEmpty()) {
+            throw new IllegalArgumentException("Any one filter is mandatory");
+        }
+
+        if (isStreamOrSse) {
+            PageRequest pageRequest = PageRequest.of(0, MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, USI_KEYWORD));
+            return new CriteriaQuery(criteria).setPageable(pageRequest);
+        }
+
+        return new CriteriaQuery(criteria);
+    }
+
     private CriteriaQuery getFindByPtmQuery(PtmRequest ptmRequest) {
         String peptideSequenceRegex = ptmRequest.getPeptideSequenceRegex();
         WsUtils.validatePeptideSeqRegex(peptideSequenceRegex);
@@ -174,12 +244,12 @@ public class SpectraController {
         }
 
         List<String> geneAccessions = ptmRequest.getGeneAccessions();
-        if(geneAccessions != null && !geneAccessions.isEmpty()) {
+        if (geneAccessions != null && !geneAccessions.isEmpty()) {
             criteria = criteria.and(new Criteria(GENE_ACCESSIONS_KEYWORD).in(geneAccessions));
         }
 
         List<String> proteinAccessions = ptmRequest.getProteinAccessions();
-        if(proteinAccessions != null && !proteinAccessions.isEmpty()) {
+        if (proteinAccessions != null && !proteinAccessions.isEmpty()) {
             criteria = criteria.and(new Criteria(PROTEIN_ACCESSIONS_KEYWORD).in(proteinAccessions));
         }
 

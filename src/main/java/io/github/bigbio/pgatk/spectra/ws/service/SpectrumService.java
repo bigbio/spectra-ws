@@ -62,27 +62,36 @@ public class SpectrumService {
                 .addSort(Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD))
                 .setPageable(pageRequest);
 
-        SearchHits<ElasticSpectrum> searches = elasticsearchRestTemplate.search(query, ElasticSpectrum.class, Constants.INDEX_COORDINATES);
-        List<ElasticSpectrum> elasticSpectrums = searches.stream().map(SearchHit::getContent).collect(Collectors.toList());
-        List<ArchiveSpectrum> archiveSpectrums = elasticSpectrums.stream().map(Converters::elasticToArchiveSpectrum).collect(Collectors.toList());
-        return archiveSpectrums;
+        return getArchiveSpectrums(query);
     }
 
     public List<ArchiveSpectrum> findByPepSequence(String pepSequence, Tuple<Integer, Integer> pageParams) {
-
         PageRequest pageRequest = PageRequest.of(pageParams.getKey(), pageParams.getValue(), Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
 //        List<ElasticSpectrum> elasticSpectrums = spectrumRepository.findByPepSequenceContaining(pepSequence, pageRequest); //doesn't work for cases like "ABC*XYZ"
-
         CriteriaQuery query = new CriteriaQuery(new Criteria("pepSequence").expression(pepSequence)).setPageable(pageRequest);
-
-        SearchHits<ElasticSpectrum> searches = elasticsearchRestTemplate.search(query, ElasticSpectrum.class, Constants.INDEX_COORDINATES);
-        List<ElasticSpectrum> elasticSpectrums = searches.stream().map(SearchHit::getContent).collect(Collectors.toList());
-        List<ArchiveSpectrum> archiveSpectrums = elasticSpectrums.stream().map(Converters::elasticToArchiveSpectrum).collect(Collectors.toList());
-        return archiveSpectrums;
+        return getArchiveSpectrums(query);
     }
 
     public Long findByPepSequenceCount(String pepSequence) {
         CriteriaQuery query = new CriteriaQuery(new Criteria("pepSequence").expression(pepSequence));
+        return elasticsearchRestTemplate.count(query, ElasticSpectrum.class, Constants.INDEX_COORDINATES);
+    }
+
+    public List<ArchiveSpectrum> findByQuery(CriteriaQuery query, Tuple<Integer, Integer> pageParams) {
+        if (pageParams != null) {
+            PageRequest pageRequest = PageRequest.of(pageParams.getKey(), pageParams.getValue(), Sort.by(Sort.Direction.ASC, Constants.USI_KEYWORD));
+            query = query.setPageable(pageRequest);
+        }
+        return getArchiveSpectrums(query);
+    }
+
+    private List<ArchiveSpectrum> getArchiveSpectrums(CriteriaQuery query) {
+        SearchHits<ElasticSpectrum> searches = elasticsearchRestTemplate.search(query, ElasticSpectrum.class, Constants.INDEX_COORDINATES);
+        List<ElasticSpectrum> elasticSpectrums = searches.stream().map(SearchHit::getContent).collect(Collectors.toList());
+        return elasticSpectrums.stream().map(Converters::elasticToArchiveSpectrum).collect(Collectors.toList());
+    }
+
+    public Long getCountForQuery(CriteriaQuery query) {
         return elasticsearchRestTemplate.count(query, ElasticSpectrum.class, Constants.INDEX_COORDINATES);
     }
 
