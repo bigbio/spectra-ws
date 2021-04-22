@@ -5,11 +5,15 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class PtmRequest {
+public class GenericRequest {
     private String peptideSequenceRegex;
-    private List<Integer> positions;
-    private PtmKey ptmKey;
-    private String ptmValue;
+    private Ptm ptm;
     private List<String> geneAccessions;
     private List<String> proteinAccessions;
+
+    @Data
+    public class Ptm {
+        private PtmKey ptmKey;
+        private String ptmValue;
+    }
 }

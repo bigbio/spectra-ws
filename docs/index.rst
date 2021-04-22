@@ -20,3 +20,5 @@ Contents
    find_gene_accession
 
    find_ptm
+
+   find_generic_reuest

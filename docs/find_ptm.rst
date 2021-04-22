@@ -16,7 +16,9 @@ sample1
     "peptideSequenceRegex": "AQLG*",
     "positions": [9, 16],
     "ptmKey": "name",
-    "ptmValue": "iTRAQ4plex"
+    "ptmValue": "iTRAQ4plex",
+    "proteinAccessions": ["P40227", "ENSP00000352019.2"],
+    "geneAccessions": ["ENST00000335503.3", "CCT6A"]
    }
 
 sample2
@@ -27,7 +29,9 @@ sample2
     "peptideSequenceRegex": "AQLG*",
     "positions": [9, 16],
     "ptmKey": "accession",
-    "ptmValue": "UNIMOD:214"
+    "ptmValue": "UNIMOD:214",
+    "proteinAccessions": ["P40227", "ENSP00000352019.2"],
+    "geneAccessions": ["ENST00000335503.3", "CCT6A"]
    }
 
 sample3
@@ -38,8 +42,13 @@ sample3
     "peptideSequenceRegex": "AQLG*",
     "positions": [9, 16],
     "ptmKey": "mass",
-    "ptmValue": "144.102063"
+    "ptmValue": "144.102063",
+    "proteinAccessions": ["P40227", "ENSP00000352019.2"],
+    "geneAccessions": ["ENST00000335503.3", "CCT6A"]
   }
+
+.. Note::
+    'proteinAccessions' & 'geneAccessions' are optional filters.
 
 .. warning::
    'peptideSequenceRegex' parameter should contain at-least 4 valid characters
