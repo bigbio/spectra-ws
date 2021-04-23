@@ -26,6 +26,9 @@ public class Converters {
                 .proteinAccessions(es.getProteinAccessions())
                 .sample(es.getSample())
                 .organism(es.getOrganism())
+                .qualityScores(es.getQualityScores())
+                .msAnnotations(es.getMsAnnotations())
+                .biologicalAnnotations(es.getBiologicalAnnotations())
                 .build();
 
         return spectrum;
