@@ -23,7 +23,7 @@ cache:
     - export HOSTNAME_BCKUP=$HOSTNAME && export HOSTNAME='${HOSTNAME}'
     - envsubst < config/.application.yml > config/application.yml
     - chmod -R 700 config
-    - (rm src/main/resources/application.properties || true)
+    - (rm src/main/resources/application.* || true)
     - export HOSTNAME=$HOSTNAME_BCKUP
     - mvn clean package -DjarFinalName=${JAR_FILE_NAME}
     - DEPLOY_DIR=$(date +"%Y%m%d_%H%M%S")
