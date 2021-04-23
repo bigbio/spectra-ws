@@ -1,36 +1,33 @@
 package io.github.bigbio.pgatk.spectra.ws.utils;
 
-import io.github.bigbio.pgatk.io.pride.ArchiveSpectrum;
-import io.github.bigbio.pgatk.spectra.ws.model.ElasticSpectrum;
+import io.github.bigbio.pgatk.elastic.multiomics.model.ElasticSpectrum;
+import io.github.bigbio.pgatk.spectra.ws.model.Spectrum;
 
 public class Converters {
 
-    public static ArchiveSpectrum elasticToArchiveSpectrum(ElasticSpectrum es) {
-        //TODO below fileds can't be mapped to ArchiveSpectrum
-//        private List<String> proteinAccessions;  ???
-//        private double precursorCharge;   ?? toINt??
-//        private List<String> projectAssays;  ?? projectAccessions??
-//        private List<String> pxProjects; ?? projectAccessions??
-//        private List<CvParam> species; ??
-//        private List<String> modificationNames; ??
-//        private List<String> modificationAccessions; ??
-//        private List<String> text; ??
-
-        return ArchiveSpectrum.builder()
+    public static Spectrum elasticToArchiveSpectrum(ElasticSpectrum es) {
+        Spectrum spectrum = Spectrum.builder()
                 .usi(es.getUsi())
-                .peptideSequence(es.getPepSequence())
+                .pepSequence(es.getPepSequence())
+                .peptidoform(es.getPeptidoform())
+                .masses(es.getMasses())
+                .intensities(es.getIntensities())
+                .precursorCharge(es.getPrecursorCharge())
                 .precursorMz(es.getPrecursorMz())
-                .precursorCharge((int) Math.round(es.getPrecursorCharge())) //TODO : is this OK?? double to int?
-                .modifications(es.getModifications())
-                .masses(es.getMasses().toArray(new Double[0]))
-                .intensities(es.getIntensities().toArray(new Double[0]))
-                .retentionTime(es.getRetentionTime())
-                .properties(es.getProperties())
+                .isDecoy(es.getIsDecoy())
                 .missedCleavages(es.getMissedCleavages())
-                .annotations(es.getAnnotations())
-                .qualityEstimationMethods(es.getQualityEstimationMethods())
-                .proteinAccessions(es.getProteinAccessions())
+                .msLevel(es.getMsLevel())
+                .retentionTime(es.getRetentionTime())
+                .peptideIntensity(es.getPeptideIntensity())
+                .modifications(es.getModifications())
+                .geneLocalizations(es.getGeneLocalizations())
                 .geneAccessions(es.getGeneAccessions())
+                .proteinLocalizations(es.getProteinLocalizations())
+                .proteinAccessions(es.getProteinAccessions())
+                .sample(es.getSample())
+                .organism(es.getOrganism())
                 .build();
+
+        return spectrum;
     }
 }

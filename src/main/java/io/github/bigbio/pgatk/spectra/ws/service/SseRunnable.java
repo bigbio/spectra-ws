@@ -1,7 +1,7 @@
 package io.github.bigbio.pgatk.spectra.ws.service;
 
-import io.github.bigbio.pgatk.io.pride.ArchiveSpectrum;
-import io.github.bigbio.pgatk.spectra.ws.model.ElasticSpectrum;
+import io.github.bigbio.pgatk.elastic.multiomics.model.ElasticSpectrum;
+import io.github.bigbio.pgatk.spectra.ws.model.Spectrum;
 import io.github.bigbio.pgatk.spectra.ws.utils.Converters;
 import org.springframework.data.elasticsearch.core.ElasticsearchRestTemplate;
 import org.springframework.data.elasticsearch.core.SearchHit;
@@ -47,7 +47,7 @@ public class SseRunnable implements Runnable {
             }
 
             elasticSpectrums.forEach(s -> {
-                ArchiveSpectrum archiveSpectrum = Converters.elasticToArchiveSpectrum(s);
+                Spectrum archiveSpectrum = Converters.elasticToArchiveSpectrum(s);
                 try {
                     SseEmitter.SseEventBuilder sseEventBuilder = SseEmitter.event()
                             .id(String.valueOf(id.incrementAndGet()))

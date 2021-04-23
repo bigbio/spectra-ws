@@ -1,8 +1,8 @@
 package io.github.bigbio.pgatk.spectra.ws.utils;
 
+import io.github.bigbio.pgatk.elastic.multiomics.model.ElasticSpectrum;
 import io.github.bigbio.pgatk.io.pride.CvParam;
 import io.github.bigbio.pgatk.io.utils.Tuple;
-import io.github.bigbio.pgatk.spectra.ws.model.ElasticSpectrum;
 import io.github.bigbio.pgatk.spectra.ws.model.PtmKey;
 
 import java.util.ArrayList;
