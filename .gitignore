@@ -57,3 +57,4 @@ Dockerfile
 pia
 
 config/application*
+src/main/resources/application*
