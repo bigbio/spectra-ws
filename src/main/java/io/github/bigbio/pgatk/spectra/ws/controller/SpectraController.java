@@ -1,12 +1,14 @@
 package io.github.bigbio.pgatk.spectra.ws.controller;
 
-import io.github.bigbio.pgatk.io.pride.ArchiveSpectrum;
+import io.github.bigbio.pgatk.elastic.multiomics.model.ElasticSpectrum;
+import io.github.bigbio.pgatk.elastic.multiomics.service.SpectrumService;
 import io.github.bigbio.pgatk.io.utils.Tuple;
-import io.github.bigbio.pgatk.spectra.ws.model.ElasticSpectrum;
 import io.github.bigbio.pgatk.spectra.ws.model.GenericRequest;
 import io.github.bigbio.pgatk.spectra.ws.model.PtmKey;
 import io.github.bigbio.pgatk.spectra.ws.model.PtmRequest;
-import io.github.bigbio.pgatk.spectra.ws.service.SpectrumService;
+import io.github.bigbio.pgatk.spectra.ws.model.Spectrum;
+import io.github.bigbio.pgatk.spectra.ws.service.StreamSpectrumService;
+import io.github.bigbio.pgatk.spectra.ws.utils.Converters;
 import io.github.bigbio.pgatk.spectra.ws.utils.FilterGetByPtmSpectrum;
 import io.github.bigbio.pgatk.spectra.ws.utils.GeneralUtils;
 import io.github.bigbio.pgatk.spectra.ws.utils.WsUtils;
@@ -27,6 +29,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import javax.validation.Valid;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static io.github.bigbio.pgatk.spectra.ws.utils.Constants.*;
 
@@ -37,31 +40,23 @@ import static io.github.bigbio.pgatk.spectra.ws.utils.Constants.*;
 @Tag(name = "Spectra")
 public class SpectraController {
 
-    private final SpectrumService spectrumService;
 
     @Autowired
-    public SpectraController(SpectrumService spectrumService) {
-        this.spectrumService = spectrumService;
-    }
+    private SpectrumService spectrumService;
+
+    @Autowired
+    private StreamSpectrumService streamSpectrumService;
 
     @GetMapping("/findByUsi")
-    public Optional<ElasticSpectrum> findByUsi(@Valid @RequestParam String usi) {
-        return spectrumService.getById(usi);
+    public Optional<Spectrum> findByUsi(@Valid @RequestParam String usi) {
+        return spectrumService.getById(usi).map(Converters::elasticToArchiveSpectrum);
     }
-
-//    @PostMapping("/findByMultipleUsis")
-//    public List<ArchiveSpectrum> findByMultipleUsis(@Valid @RequestBody List<String> usis,
-//                                                    @RequestParam(value = "page", defaultValue = "0") Integer page,
-//                                                    @RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize) {
-//        Tuple<Integer, Integer> pageParams = WsUtils.validatePageLimit(page, pageSize);
-//        return spectrumService.getByIds(usis, pageParams);
-//    }
 
     @PostMapping("/stream/findByMultipleUsis")
     public ResponseEntity<ResponseBodyEmitter> findByMultipleUsisStream(@Valid @RequestBody List<String> usis) {
         PageRequest pageRequest = PageRequest.of(0, MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, USI_KEYWORD));
         CriteriaQuery query = new CriteriaQuery(new Criteria(USI_KEYWORD).in(usis)).setPageable(pageRequest);
-        ResponseBodyEmitter emitter = spectrumService.getStreamEmitter(query, null);
+        ResponseBodyEmitter emitter = streamSpectrumService.getStreamEmitter(query, null);
         return new ResponseEntity(emitter, HttpStatus.OK);
     }
 
@@ -69,17 +64,19 @@ public class SpectraController {
     public SseEmitter findByMultipleUsisSse(@Valid @RequestBody List<String> usis) {
         PageRequest pageRequest = PageRequest.of(0, MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, USI_KEYWORD));
         CriteriaQuery query = new CriteriaQuery(new Criteria(USI_KEYWORD).in(usis)).setPageable(pageRequest);
-        return spectrumService.getSseEmitter(query, null);
+        return streamSpectrumService.getSseEmitter(query, null);
     }
 
     @GetMapping("/findByPepSequence")
-    public List<ArchiveSpectrum> findByPepSequence(@Valid @RequestParam String peptideSequenceRegex,
-                                                   @RequestParam(value = "page", defaultValue = "0") Integer page,
-                                                   @RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize) {
+    public List<Spectrum> findByPepSequence(@Valid @RequestParam String peptideSequenceRegex,
+                                            @RequestParam(value = "page", defaultValue = "0") Integer page,
+                                            @RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize) {
 
         WsUtils.validatePeptideSeqRegex(peptideSequenceRegex);
         Tuple<Integer, Integer> pageParams = WsUtils.validatePageLimit(page, pageSize);
-        return spectrumService.findByPepSequence(peptideSequenceRegex, pageParams);
+        return spectrumService.findByPepSequence(peptideSequenceRegex, pageParams)
+                .stream().map(Converters::elasticToArchiveSpectrum)
+                .collect(Collectors.toList());
     }
 
     @GetMapping("/findByPepSequence/count")
@@ -94,7 +91,7 @@ public class SpectraController {
         WsUtils.validatePeptideSeqRegex(peptideSequenceRegex);
         PageRequest pageRequest = PageRequest.of(0, MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, USI_KEYWORD));
         CriteriaQuery query = new CriteriaQuery(new Criteria(PEPTIDE_SEQUENCE).expression(peptideSequenceRegex)).setPageable(pageRequest);
-        ResponseBodyEmitter emitter = spectrumService.getStreamEmitter(query, null);
+        ResponseBodyEmitter emitter = streamSpectrumService.getStreamEmitter(query, null);
         return new ResponseEntity(emitter, HttpStatus.OK);
     }
 
@@ -103,14 +100,14 @@ public class SpectraController {
         WsUtils.validatePeptideSeqRegex(peptideSequenceRegex);
         PageRequest pageRequest = PageRequest.of(0, MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, USI_KEYWORD));
         CriteriaQuery query = new CriteriaQuery(new Criteria(PEPTIDE_SEQUENCE).expression(peptideSequenceRegex)).setPageable(pageRequest);
-        return spectrumService.getSseEmitter(query, null);
+        return streamSpectrumService.getSseEmitter(query, null);
     }
 
     @PostMapping(path = "/stream/findByProteinAccessions")
     public ResponseEntity<ResponseBodyEmitter> findByProteinAccessionStream(@Valid @RequestBody List<String> proteinAccessions) {
         PageRequest pageRequest = PageRequest.of(0, MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, USI_KEYWORD));
         CriteriaQuery query = new CriteriaQuery(new Criteria(PROTEIN_ACCESSIONS_KEYWORD).in(proteinAccessions)).setPageable(pageRequest);
-        ResponseBodyEmitter emitter = spectrumService.getStreamEmitter(query, null);
+        ResponseBodyEmitter emitter = streamSpectrumService.getStreamEmitter(query, null);
         return new ResponseEntity(emitter, HttpStatus.OK);
     }
 
@@ -118,14 +115,14 @@ public class SpectraController {
     public SseEmitter findByProteinAccessionSse(@Valid @RequestBody List<String> proteinAccessions) {
         PageRequest pageRequest = PageRequest.of(0, MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, USI_KEYWORD));
         CriteriaQuery query = new CriteriaQuery(new Criteria(PROTEIN_ACCESSIONS_KEYWORD).in(proteinAccessions)).setPageable(pageRequest);
-        return spectrumService.getSseEmitter(query, null);
+        return streamSpectrumService.getSseEmitter(query, null);
     }
 
     @PostMapping(path = "/stream/findByGeneAccessions")
     public ResponseEntity<ResponseBodyEmitter> findByGeneAccessionStream(@Valid @RequestBody List<String> geneAccessions) {
         PageRequest pageRequest = PageRequest.of(0, MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, USI_KEYWORD));
         CriteriaQuery query = new CriteriaQuery(new Criteria(GENE_ACCESSIONS_KEYWORD).in(geneAccessions)).setPageable(pageRequest);
-        ResponseBodyEmitter emitter = spectrumService.getStreamEmitter(query, null);
+        ResponseBodyEmitter emitter = streamSpectrumService.getStreamEmitter(query, null);
         return new ResponseEntity(emitter, HttpStatus.OK);
     }
 
@@ -133,14 +130,14 @@ public class SpectraController {
     public SseEmitter findByGeneAccessionSse(@Valid @RequestBody List<String> geneAccessions) {
         PageRequest pageRequest = PageRequest.of(0, MAX_PAGINATION_SIZE, Sort.by(Sort.Direction.ASC, USI_KEYWORD));
         CriteriaQuery query = new CriteriaQuery(new Criteria(GENE_ACCESSIONS_KEYWORD).in(geneAccessions)).setPageable(pageRequest);
-        return spectrumService.getSseEmitter(query, null);
+        return streamSpectrumService.getSseEmitter(query, null);
     }
 
     @PostMapping(path = "/stream/findByPtm")
     public ResponseEntity<ResponseBodyEmitter> findByPtmStream(@RequestBody PtmRequest ptmRequest) {
         CriteriaQuery query = getFindByPtmQuery(ptmRequest);
         FilterGetByPtmSpectrum filterFunc = new FilterGetByPtmSpectrum(ptmRequest.getPtmKey(), ptmRequest.getPtmValue(), ptmRequest.getPositions());
-        ResponseBodyEmitter emitter = spectrumService.getStreamEmitter(query, filterFunc);
+        ResponseBodyEmitter emitter = streamSpectrumService.getStreamEmitter(query, filterFunc);
         return new ResponseEntity(emitter, HttpStatus.OK);
     }
 
@@ -148,18 +145,20 @@ public class SpectraController {
     public SseEmitter findByPtmSse(@RequestBody PtmRequest ptmRequest) {
         CriteriaQuery query = getFindByPtmQuery(ptmRequest);
         FilterGetByPtmSpectrum filterFunc = new FilterGetByPtmSpectrum(ptmRequest.getPtmKey(), ptmRequest.getPtmValue(), ptmRequest.getPositions());
-        return spectrumService.getSseEmitter(query, filterFunc);
+        return streamSpectrumService.getSseEmitter(query, filterFunc);
     }
 
     @PostMapping("/findByGenericRequest")
-    public List<ArchiveSpectrum> findByGenericRequest(@RequestBody GenericRequest genericRequest,
+    public List<Spectrum> findByGenericRequest(@RequestBody GenericRequest genericRequest,
                                                       @RequestParam(value = "page", defaultValue = "0") Integer page,
                                                       @RequestParam(value = "pageSize", defaultValue = "100") Integer pageSize) {
         Tuple<Integer, Integer> pageParams = WsUtils.validatePageLimit(page, pageSize);
         CriteriaQuery query = getQueryForGenericRequest(genericRequest, false);
-        return spectrumService.findByQuery(query, pageParams);
+        return spectrumService.findByQuery(query, pageParams).stream()
+                .map(Converters::elasticToArchiveSpectrum)
+                .collect(Collectors.toList());
     }
-
+//
     @PostMapping("/findByGenericRequest/count")
     public Long findByGenericRequestCount(@RequestBody GenericRequest genericRequest) {
         CriteriaQuery query = getQueryForGenericRequest(genericRequest, false);
@@ -169,14 +168,14 @@ public class SpectraController {
     @PostMapping(path = "/stream/findByGenericRequest")
     public ResponseEntity<ResponseBodyEmitter> findByGenericRequestStream(@RequestBody GenericRequest genericRequest) {
         CriteriaQuery query = getQueryForGenericRequest(genericRequest, true);
-        ResponseBodyEmitter emitter = spectrumService.getStreamEmitter(query, null);
+        ResponseBodyEmitter emitter = streamSpectrumService.getStreamEmitter(query, null);
         return new ResponseEntity(emitter, HttpStatus.OK);
     }
 
     @PostMapping(path = "/sse/findByGenericRequest")
     public SseEmitter findByGenericRequestSee(@RequestBody GenericRequest genericRequest) {
         CriteriaQuery query = getQueryForGenericRequest(genericRequest, true);
-        return spectrumService.getSseEmitter(query, null);
+        return streamSpectrumService.getSseEmitter(query, null);
     }
 
     private CriteriaQuery getQueryForGenericRequest(GenericRequest genericRequest, boolean isStreamOrSse) {
