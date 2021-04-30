@@ -27,16 +27,12 @@ public class FilterGetByPtmSpectrum implements Function<List<ElasticSpectrum>, L
         List<ElasticSpectrum> elasticSpectrumsFiltered = new ArrayList<>();
         elasticSpectrums.forEach(a -> {
             a.getModifications().forEach(m -> {
-                CvParam modification = m.getModification();
-                for (Tuple<Integer, List<CvParam>> p : m.getPositionMap()) {
-                    if (positions.contains(p.getKey())) {
-                        if ((ptmKeyName.equals("accession") && modification.getAccession().equals(ptmValue)) ||
-                                (ptmKeyName.equals("name") && modification.getName().equals(ptmValue)) ||
-                                (ptmKeyName.equals("mass") && modification.getValue().equals(ptmValue))) {
+                if (positions.contains(m.getPosition())) {
+                    if ((ptmKeyName.equals("accession") && m.getAccession().equals(ptmValue)) ||
+                            (ptmKeyName.equals("name") && m.getModification().equals(ptmValue))) {
                             elasticSpectrumsFiltered.add(a);
                             return;
                         }
-                    }
                 }
             });
         });
