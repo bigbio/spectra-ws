@@ -4,10 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonRootName;
 import com.fasterxml.jackson.annotation.JsonTypeName;
-import io.github.bigbio.pgatk.io.pride.AccessionLocalization;
-import io.github.bigbio.pgatk.io.pride.CvParam;
-import io.github.bigbio.pgatk.io.pride.GeneCoordinates;
-import io.github.bigbio.pgatk.io.pride.IdentifiedModification;
+import io.github.bigbio.pgatk.io.pride.*;
 import io.github.bigbio.pgatk.io.utils.Tuple;
 import lombok.Builder;
 import lombok.Data;
@@ -47,10 +44,10 @@ public class Spectrum {
     private String organism;
 
     @JsonProperty("sample")
-    private List<Tuple<String, String>> sample;
+    private List<AvroTuple> sample;
 
     @JsonProperty("biologicalAnnotations")
-    Set<String> biologicalAnnotations;
+    Set<AvroTuple> biologicalAnnotations;
 
     @JsonProperty("precursorMz")
     private double precursorMz;
@@ -59,7 +56,7 @@ public class Spectrum {
     private int precursorCharge;
 
     @JsonProperty("modifications")
-    private List<IdentifiedModification> modifications;
+    private List<AvroModification> modifications;
 
     @JsonProperty("modificationNames")
     private Set<String> modificationNames;
@@ -83,10 +80,10 @@ public class Spectrum {
     Integer missedCleavages;
 
     @JsonProperty("qualityScores")
-    private Set<CvParam> qualityScores;
+    private Set<AvroTerm> qualityScores;
 
     @JsonProperty("msAnnotations")
-    Set<CvParam> msAnnotations;
+    Set<AvroTuple> msAnnotations;
 
     @JsonProperty("pxAccession")
     private String pxAccession;
@@ -99,7 +96,7 @@ public class Spectrum {
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     public Collection<String> getModificationNames() {
-        return modifications.stream().map(x -> x.getModificationCvTerm().getName()).collect(Collectors.toList());
+        return modifications.stream().map(AvroModification::getModification).collect(Collectors.toList());
     }
 
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)

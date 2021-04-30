@@ -1,11 +1,16 @@
 package io.github.bigbio.pgatk.spectra.ws.utils;
 
 import io.github.bigbio.pgatk.elastic.multiomics.model.ElasticSpectrum;
+import io.github.bigbio.pgatk.io.pride.AvroTuple;
 import io.github.bigbio.pgatk.spectra.ws.model.Spectrum;
+
+import java.util.HashSet;
 
 public class Converters {
 
     public static Spectrum elasticToArchiveSpectrum(ElasticSpectrum es) {
+        HashSet<AvroTuple> biologicalAnnotations = (es.getBiologicalAnnotations() != null)?new HashSet<>(es.getBiologicalAnnotations()): new HashSet<>();
+
         Spectrum spectrum = Spectrum.builder()
                 .usi(es.getUsi())
                 .pepSequence(es.getPepSequence())
@@ -20,15 +25,15 @@ public class Converters {
                 .retentionTime(es.getRetentionTime())
                 .peptideIntensity(es.getPeptideIntensity())
                 .modifications(es.getModifications())
-                .geneLocalizations(es.getGeneLocalizations())
-                .geneAccessions(es.getGeneAccessions())
-                .proteinLocalizations(es.getProteinLocalizations())
-                .proteinAccessions(es.getProteinAccessions())
+                .geneLocalizations(new HashSet<>(es.getGeneLocalizations()))
+                .geneAccessions(new HashSet<>(es.getGeneAccessions()))
+                .proteinLocalizations(new HashSet<>(es.getProteinLocalizations()))
+                .proteinAccessions(new HashSet<>(es.getProteinAccessions()))
                 .sample(es.getSample())
                 .organism(es.getOrganism())
-                .qualityScores(es.getQualityScores())
-                .msAnnotations(es.getMsAnnotations())
-                .biologicalAnnotations(es.getBiologicalAnnotations())
+                .qualityScores(new HashSet<>(es.getQualityScores()))
+                .msAnnotations(new HashSet<>(es.getMsAnnotations()))
+                .biologicalAnnotations(biologicalAnnotations)
                 .build();
 
         return spectrum;
